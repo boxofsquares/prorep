@@ -1,0 +1,36 @@
+.App {
+  text-align: center;
+
+  #parliament {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(10,max-content);
+    align-items: center;
+    justify-items: center;
+    height: 100vh;
+    justify-content: center;
+    align-content: center;
+
+    .seat {
+      height: 5rem;
+      width: 5rem;
+      border-radius: 50%;
+      background: green;
+      display:flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .green{
+      background-color: green;
+    }
+
+    .red {
+      background-color: red;
+    }
+
+    .blue {
+      background-color: blue;
+    }
+  }
+}
