@@ -16,13 +16,55 @@
     flex-direction: column;
     justify-content: center;
     padding: 5rem;
+
+    #system-toggle {
+      button {
+        line-height: 2rem;
+        padding: 1rem;
+        text-decoration: none; 
+        background: none;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        position: relative;
+        overflow:hidden;
+
+        &:focus {
+          outline: 0;
+        }
+
+        &:after {
+          content: '';
+          height: 0.5rem;
+          width: 100%;
+          position: absolute;
+          bottom: 0;
+          background-color: red;
+          transition: left 0.5s ease-out;
+        }
+
+        &.left-toggle:after {
+          right: -100%;
+        }
+        
+        &.right-toggle:after {
+          left: -100%;
+        }
+        
+        &.left-toggle.selected:after, &.right-toggle.selected:after  {
+            left: 0;
+            right: 0;
+        }
+      }
+
+      
+    }
     
     #parliament {
       display: grid;
-      grid-auto-flow: column;
-      grid-template-rows: repeat(4, max-content);
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, auto);
       justify-content: center;
-      align-content: center;
 
       .seat {
         height: 5rem;
@@ -32,18 +74,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: background-color 0.5s ease-out;
       }
 
       .green {
         background-color: green;
+        order: 3;
       }
 
       .red {
         background-color: red;
+        order: 2;
       }
 
       .blue {
         background-color: blue;
+        order: 1;
       }
 
       .region {
@@ -77,14 +123,33 @@
         display: grid;
         grid-template: repeat(2, 1fr) / repeat(2, 1fr);
         grid-gap: 1rem;
+        position: relative;
 
         .district {
           display: grid;
           grid-gap: 1rem;
           grid-template-columns: repeat(4, size-max);
           align-items: center;
+          position: relative;
+          padding-bottom: 1rem;
+          box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.23),
+          0 5px 5px rgba(0, 0, 0, 0.25);
+          transition: border 0.2s linear;
+
           h2 {
             grid-column: 1/5;
+          }
+
+          &.blue {
+            border-bottom: 0.5rem solid blue;  
+          }
+
+          &.red {
+            border-bottom: 0.5rem solid red;  
+          }
+
+          &.green {
+            border-bottom: 0.5rem solid green;  
           }
         }
       }

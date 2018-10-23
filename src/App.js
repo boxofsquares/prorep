@@ -62,10 +62,10 @@ class App extends Component {
       <div className="App">
       <div id="left-pane">
         <div id="system-toggle">
-          <button name="FPTP" onClick={this.toggleSystem}>
+          <button name="FPTP" className={"left-toggle " + (this.state.system == VotingSystem.FPTP ? "selected" : "")} onClick={this.toggleSystem}>
             FPTP
           </button>
-          <button name="MMP" onClick={this.toggleSystem}>
+          <button name="MMP" className={"right-toggle " + (this.state.system == VotingSystem.FPTP ? "" : "selected")} onClick={this.toggleSystem}>
             MMP
           </button>
         </div>
@@ -156,7 +156,7 @@ class Parliament extends Component {
     let regionSeats = []
     for(let i = 0; i < NO_OF_REGION_SEATS; i++) {
       let delta = ["blue","red","green"].reduce((acc, party) => {
-        let margin = allSeats[party] /  (NO_OF_DISTRICTS + i + 1) - _overall[party] / 100 ;
+        let margin = allSeats[party] /  (directSeats.length + i ) - _overall[party] / 100 ;
         if (margin < 0) {
           if (margin < acc.d) {
             acc = { party: party, d: margin};
@@ -251,7 +251,7 @@ class District extends Component {
     let results = this.props.details.results;
     let locked = this.state.locked;
     return (
-      <div className="district">
+      <div className={"district " + this.getWinner()["party"]}>
         <h2>District {this.props.details.districtId}</h2>
         <label>Party Blue</label>
         <input name="blue-votes" type="range" min="0" max="100" value={results.blue.votes} onChange={this.handleChange} />
@@ -338,6 +338,17 @@ class District extends Component {
         return obj;
       }, {});
       return updates;
+    }
+
+    getWinner() {
+      let _results = this.props.details.results;
+      return ["blue","red","green"].reduce((acc, _party) => {
+        if (_results[_party].votes > acc.votes) {
+          return {party: _party, votes: _results[_party].votes }
+        } else {
+          return acc;
+        }
+      }, {party: "", votes: 0 })
     }
 }
 
