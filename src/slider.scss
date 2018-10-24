@@ -1,7 +1,9 @@
-.slider-container {
+.slider-container {  
   .slider-rail {
     position: relative;
     overflow: hidden;
+    border-radius: 0.8rem;
+    height: 3rem;
 
     .slider-left, .slider-middle, .slider-right {
       height: 3rem;
@@ -22,9 +24,9 @@
 
     .slider-dial {
       position: absolute;
-      bottom: 0.2rem;
       transform: translateX(-50%);
       cursor: pointer;
+      bottom: 0;
       width: 0; 
       height: 0; 
       border-left: 1rem solid transparent;

@@ -104,15 +104,29 @@ class VoteSlider extends Component {
 
     if (screenX < xPos) {
       if (dial === "left") {
-        _low = low - this.increment >= 0 ? low - this.increment : low;
+        _low = _low - this.increment >= 0 ? _low - this.increment : _low;
       } else {
-        _high = high - this.increment > low ? high - this.increment : high;
+        _high = _high - this.increment >= _low ? _high - this.increment : _high;
+      }
+      if (_low >= 1/3 * 100 && _low == 100 - _high) {
+        if (dial === "left") {
+          _low = _low - this.increment;
+        } else {
+          _high = _high - this.increment;
+        }
       }
     } else if (screenX > xPos) {
       if (dial === "left") {
-        _low = low + this.increment < high ? low + this.increment : low;
+        _low = _low + this.increment <= _high ? _low + this.increment : _low;
       } else {
-        _high = high + this.increment <= 100 ? high + this.increment : high;
+        _high = _high + this.increment <= 100 ? _high + this.increment : _high;
+      }
+      if (_low >= 1/3 * 100 && _low == 100 - _high) {
+        if (dial === "left") {
+          _low = _low + this.increment;
+        } else {
+          _high = _high + this.increment;
+        }
       }
     }
     this.update({

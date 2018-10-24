@@ -1,0 +1,40 @@
+{
+  "regions": [
+    {
+      "regionName": "Middle-Earth",
+      "districts": [
+        "Gondor",
+        "Rohan",
+        "Mordor",
+        "Hobbiton"
+      ]
+    },
+    {
+      "regionName": "A Galaxy Far, Far Away",
+      "districts": [
+        "Tatooine",
+         "Naboo",
+         "Coruscant",
+         "The Death Star"
+      ]
+    },
+    {
+      "regionName": "Wizards",
+      "districts": [
+        "Diagon Alley",
+        "Hogwarts",
+        "Hogsmeade",
+        "Little Whinging"
+      ]
+    },
+    {
+      "regionName": "Shinobi",
+      "districts": [
+        "Hidden Leaf",
+        "Hidden Rain",
+        "Hidden Sand",
+        "Hidden Eddies"
+      ]
+    }
+  ]
+}

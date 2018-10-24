@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.scss';
 import VoteSlider from './slider.js';
+import Names from './names.json';
 
 const TOTAL_VOTES = 100;
 const NO_OF_REGIONS = 4;
@@ -11,7 +12,6 @@ const VotingSystem = Object.freeze({
   FPTP: 0,
   MMP: 1,
 });
-
 
 class App extends Component {
   constructor(props) {
@@ -27,6 +27,7 @@ class App extends Component {
     for(let j = 1; j <= NO_OF_REGIONS; j++) {  
       let _region = { 
         regionId: j,
+        regionAttr: Names.regions[j-1],
         districts: [] };  
       let _lower = (j-1) * NO_OF_DISTRICTS + 1;
       let _upper = _lower + NO_OF_DISTRICTS;
@@ -103,34 +104,70 @@ class App extends Component {
 class Parliament extends Component {
 
   render() {
+    let { allSeats, overall } = this.getAllSeats();
+    const { blue, red, green, total} = this.getPopularVote();
+    let html = this.buildSeats(allSeats);
     return(
-      <div>
+      <div id="parliament-wrapper">
         <h1>Parliament</h1>
         <div id="parliament">
-        { this.getAllSeats() }
+        { html }
+        </div>
+        <div id="legend">
+          <span className="district">District Seat</span>
+          <span className="region">Region Seat</span>
+        </div>
+        <div id="parliament-breakdown">
+          <div></div>
+          <h3 className="popular">Popular Vote</h3>
+          <h3 className="representation">Representation</h3>
+          <h3 className="title blue">Blue Party</h3>
+          <div className="percentage blue">{`${(blue / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage blue">{`${(overall.blue / overall.total * 100).toPrecision(4)}%`}</div>
+          <h3 className="title red">Red Party</h3>
+          <div className="percentage red">{`${(red / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage red">{`${(overall.red / overall.total * 100).toPrecision(4)}%`}</div>
+          <h3 className="title green">Green Party</h3>
+          <div className="percentage green">{`${(green / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage green">{`${(overall.green / overall.total * 100).toPrecision(4)}%`}</div>
         </div>
       </div>
     )
   }
 
   getAllSeats() {
-    let allSeats = [];
-    for (let region of this.props.election.regions) {
-      let directSeats = [];
+    const { regions } = this.props.election;
+    let acc = regions.reduce((acc, region) => {
+      let allSeats = [];
+      let seatsByParty = {blue: 0, red: 0, green: 0, total: 0};
       for (let district of region.districts) {
-        directSeats.push(
+        let winner = this.getWinner(district)["party"];
+        allSeats.push(
           {
             districtId: district.districtId,
             type: "direct",
-            party: this.getWinner(district)["party"],
+            party: winner,
           }
         );
+        seatsByParty[winner] += 1;
+        seatsByParty.total += 1;
       }
-      allSeats.push(...directSeats);
-      if (this.props.election.system == VotingSystem.MMP) {
-        allSeats.push(...this.distributeRegionalSeats(directSeats,region));
+      // acc.allSeats.push(...directSeats);
+      if (this.props.election.system === VotingSystem.MMP) {
+        let results = this.distributeRegionalSeats(allSeats,seatsByParty, region);
+        allSeats = results.allSeats;
+        seatsByParty = results.seatsByParty;
       }
-    }
+      acc.allSeats.push(... allSeats);
+      ["blue","red","green","total"].forEach((party) => {
+        acc.overall[party] += seatsByParty[party];  
+      });
+      return acc;
+    }, { allSeats: [], overall: { blue: 0, red: 0, green: 0, total: 0}})
+    return acc;
+  }
+
+  buildSeats(allSeats) {
     return allSeats.map((seat) => {
       return (
         <div id={seat.districtId} className={'seat ' + seat.party + " " + seat.type}></div>
@@ -148,16 +185,16 @@ class Parliament extends Component {
     }, {party: "", votes: 0 })
   }
 
-  distributeRegionalSeats(directSeats, regionObj) {
-    let _overall = regionObj.overall;
-    let allSeats = directSeats.reduce((acc, districtSeat) => {
-      acc[districtSeat.party] += 1;
-      return acc;
-    }, { blue: 0, red: 0, green: 0 })
+  distributeRegionalSeats(directSeats, seatsByParty, regionObj) {
+    let { overall } = regionObj;
+    // let allSeats = directSeats.reduce((acc, districtSeat) => {
+    //   acc[districtSeat.party] += 1;
+    //   return acc;
+    // }, { blue: 0, red: 0, green: 0 })
     let regionSeats = []
     for(let i = 0; i < NO_OF_REGION_SEATS; i++) {
       let delta = ["blue","red","green"].reduce((acc, party) => {
-        let margin = allSeats[party] /  (directSeats.length + i ) - _overall[party] / 100 ;
+        let margin = seatsByParty[party] /  (directSeats.length + NO_OF_REGION_SEATS) - overall[party] / 100 ;
         if (margin < 0) {
           if (margin < acc.d) {
             acc = { party: party, d: margin};
@@ -165,14 +202,25 @@ class Parliament extends Component {
         }
         return acc;
       }, {party: "", d: 0});
-      allSeats[delta.party] += 1;
+      seatsByParty[delta.party] += 1;
+      seatsByParty.total += 1;
       regionSeats.push({
           districtId: 0,
           type: "region",
           party: delta.party,
       })
     }
-    return regionSeats;
+    return { allSeats: [... directSeats, ...regionSeats], seatsByParty: seatsByParty };
+  }
+
+  getPopularVote() {
+    const { regions } = this.props.election;
+    return regions.reduce((acc, region) => {
+      ["blue","red","green","total"].forEach((party) => {
+        acc[party] += region.overall[party];
+      });
+      return acc;
+    }, { blue: 0, red: 0, green: 0, total: 0});
   }
 }
 
@@ -186,12 +234,12 @@ class Region extends Component {
     let details = this.props.details;
     return (
       <div className="region">
-        <h1> Region {details.regionId}</h1>
+        <h1>{details.regionAttr.regionName}</h1>
         <div className="districts">
-        <District details={details.districts[0]} notifyParent={this.onDistrictChange}/>
-        <District details={details.districts[1]} notifyParent={this.onDistrictChange}/>
-        <District details={details.districts[2]} notifyParent={this.onDistrictChange}/>
-        <District details={details.districts[3]} notifyParent={this.onDistrictChange}/>
+        <District details={details.districts[0]} name={details.regionAttr.districts[0]} notifyParent={this.onDistrictChange}/>
+        <District details={details.districts[1]} name={details.regionAttr.districts[1]} notifyParent={this.onDistrictChange}/>
+        <District details={details.districts[2]} name={details.regionAttr.districts[2]} notifyParent={this.onDistrictChange}/>
+        <District details={details.districts[3]} name={details.regionAttr.districts[3]} notifyParent={this.onDistrictChange}/>
 
         </div>
         {this.displayVoteBar()}
@@ -255,7 +303,7 @@ class District extends Component {
 
     return (
       <div className={"district " + this.getWinner()["party"]}>
-        <h2>District {this.props.details.districtId}</h2>
+        <h2>{this.props.name}</h2>
         {/* <label>Party Blue</label>
         <input name="blue-votes" type="range" min="0" max="100" value={results.blue.votes} onChange={this.handleChange} /> */}
         <VoteSlider low={results.blue.votes} high={results.blue.votes + results.red.votes} handleChange={this.handleSliderChange}/>
