@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.scss';
+import VoteSlider from './slider.js';
 
 const TOTAL_VOTES = 100;
 const NO_OF_REGIONS = 4;
@@ -16,7 +17,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.initializeState()
-    this.onDistrictChange = this.onDistrictChange.bind(this);
+    this.onRegionChange = this.onRegionChange.bind(this);
     this.toggleSystem = this.toggleSystem.bind(this);
   }
 
@@ -72,10 +73,10 @@ class App extends Component {
         <Parliament election={this.state} />
       </div>
        <div id="regions">
-          <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onDistrictChange}/>
-          <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onDistrictChange}/>
-          <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onDistrictChange}/>
-          <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onDistrictChange}/>
+          <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onRegionChange}/>
+          <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange}/>
+          <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onRegionChange}/>
+          <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onRegionChange}/>
         </div>
       </div>
     );
@@ -85,7 +86,7 @@ class App extends Component {
     return this.state.regions[region - 1];
   }
   
-  onDistrictChange(regionState) {
+  onRegionChange(regionState) {
     let _state = this.state;
     _state.regions[regionState.regionId - 1] = regionState;
     this.setState(_state);
@@ -242,20 +243,23 @@ class District extends Component {
         red: false,
         blue: false,
         green: false,
-      }
+      },
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleSliderChange = this.handleSliderChange.bind(this);
   }
   
   render() {
-    let results = this.props.details.results;
-    let locked = this.state.locked;
+    const { results } = this.props.details;
+    const { locked } = this.state;
+
     return (
       <div className={"district " + this.getWinner()["party"]}>
         <h2>District {this.props.details.districtId}</h2>
-        <label>Party Blue</label>
-        <input name="blue-votes" type="range" min="0" max="100" value={results.blue.votes} onChange={this.handleChange} />
-        <span>{results.blue.votes + '%'}</span> 
+        {/* <label>Party Blue</label>
+        <input name="blue-votes" type="range" min="0" max="100" value={results.blue.votes} onChange={this.handleChange} /> */}
+        <VoteSlider low={results.blue.votes} high={results.blue.votes + results.red.votes} handleChange={this.handleSliderChange}/>
+        {/* <span>{results.blue.votes + '%'}</span> 
         <input name="blue-locked" type='checkbox' checked={locked.blue}  onChange={this.handleChange} />
         <label>Party Red</label>
         <input name="red-votes" type="range"  min="0" max="100" value={results.red.votes} onChange={this.handleChange} />
@@ -264,12 +268,22 @@ class District extends Component {
         <label>Party Green</label>
         <input name="green-votes" type="range"  min="0" max="100" value={results.green.votes} onChange={this.handleChange} />
         <span>{results.green.votes + '%'}</span> 
-        <input name="green-locked" type='checkbox' checked={locked.green}  onChange={this.handleChange} />
+        <input name="green-locked" type='checkbox' checked={locked.green}  onChange={this.handleChange} /> */}
       </div>
     );
   }
 
     // Handlers
+    handleSliderChange({ low, high }) {
+      const { notifyParent } = this.props;
+      let { districtId, results } = this.props.details;
+      results.blue.votes = low;
+      results.red.votes = high - low;
+      results.green.votes = 100 - high;
+
+      notifyParent({ districtId, results });
+    }
+
     handleChange(event) {
       let target = event.target;
       let tags = event.target.name.split('-');
