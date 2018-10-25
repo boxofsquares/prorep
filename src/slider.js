@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import "./slider.scss";
+import "./colors.scss";
 
 class VoteSlider extends Component {
   constructor(props) {
@@ -25,14 +26,15 @@ class VoteSlider extends Component {
         onMouseUp={this.handleMouseUp} 
         onMouseLeave={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
-        onDragEnter={this.handleMouseUp}
         >
         <div className="slider-rail">
-          <div className="slider-left" style={leftBar} onDragEnter={this.stopBubble}>
+        <div className="slider-bar-wrapper">
+          <div className="slider-left blue-fill" style={leftBar} onMouseDown={this.stopBubble}>
           </div>
-          <div className="slider-middle" style={middleBar} onDragEnter={this.stopBubble}>
+          <div className="slider-middle red-fill" style={middleBar} onMouseDown={this.stopBubble}>
           </div>
-          <div className="slider-right" style={rightBar} onDragEnter={this.stopBubble}>
+          <div className="slider-right green-fill" style={rightBar} onMouseDown={this.stopBubble}>
+          </div>
           </div>
           <div 
             id={"left-dial"}
@@ -46,23 +48,23 @@ class VoteSlider extends Component {
             className="slider-dial" 
             style={highDial} 
             onMouseDown={this.handleMouseDownRight} 
-            // onMouseUp={this.handleMouseUp} 
-            // onMouseOut={this.handleMouseUp}
-            // onMouseMove={this.handleMouseMoveHigh}
             >
           </div>
-        </div>
+          </div>
         <div className="slider-legend">
-          <div className="label-left">{leftLabel}</div>
-          <div className="label-center">{centerLabel}</div>
-          <div className="label-right">{rightLabel}</div>
+          <div className="label-left blue-text">{leftLabel}</div>
+          <div className="label-center red-text">{centerLabel}</div>
+          <div className="label-right green-text">{rightLabel}</div>
         </div>
       </div>
     )
   }
 
   // Handlers
-  handleMouseDownLeft({ screenX }) {
+  handleMouseDownLeft(event) {
+      let { screenX } = event;
+      event.preventDefault();
+      event.stopPropagation();
      this.setState({
       xPos: screenX,
       mouseDown: true, 
@@ -70,7 +72,10 @@ class VoteSlider extends Component {
      });
   }
 
-  handleMouseDownRight({ screenX }) {
+  handleMouseDownRight(event) {
+    let { screenX } = event;
+    event.preventDefault();
+    event.stopPropagation();
     this.setState({
      xPos: screenX,
      mouseDown: true, 
@@ -86,14 +91,6 @@ class VoteSlider extends Component {
   handleMouseUp() {
     this.resetDial();
   }
-
-  // handleMouseMoveLow({ screenX }) {
-  //   this.handleMouseMove(screenX, "left-dial");
-  // }
-
-  // handleMouseMoveHigh({ screenX }) {
-  //   this.handleMouseMove(screenX, "right-dial");
-  // }
 
   handleMouseMove({ screenX }) {
     const { xPos, mouseDown, dial } = this.state;

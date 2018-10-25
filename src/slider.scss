@@ -1,25 +1,22 @@
-.slider-container {  
+$rail-height: 3rem;
+
+.slider-container {
   .slider-rail {
     position: relative;
-    overflow: hidden;
     border-radius: 0.8rem;
-    height: 3rem;
+    height: $rail-height;
 
-    .slider-left, .slider-middle, .slider-right {
-      height: 3rem;
-      display: inline-block;
-    }
+    .slider-bar-wrapper {
+      border-radius: 0.8rem;
+      overflow: hidden;
+      height: $rail-height;
 
-    .slider-left {
-      background-color: blue;
-    }
-
-    .slider-middle {
-      background-color: red;
-    }
-
-    .slider-right {
-      background-color: green;
+      .slider-left,
+      .slider-middle,
+      .slider-right {
+        height: $rail-height;
+        display: inline-block;
+      }
     }
 
     .slider-dial {
@@ -27,11 +24,22 @@
       transform: translateX(-50%);
       cursor: pointer;
       bottom: 0;
-      width: 0; 
-      height: 0; 
+      box-sizing: border-box;
+      height: $rail-height;
+      border-top: 1rem solid black;
       border-left: 1rem solid transparent;
       border-right: 1rem solid transparent;
       border-bottom: 1rem solid black;
+
+      &:before {
+        content: '';
+        position: absolute;
+        top: -0.8rem;
+        left: -1px;
+        width: 3px;
+        height: 2.8rem;
+        background-color: black;
+      }
     }
   }
 

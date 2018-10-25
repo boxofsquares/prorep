@@ -1,0 +1,43 @@
+$blue: desaturate(blue, 20);
+$red: desaturate(red, 20);
+$green: desaturate(green, 20);
+
+body {
+  .blue-fill {
+    background-color: $blue;
+  }
+
+  .red-fill {
+    background-color: $red;
+  }
+  
+  .green-fill {
+    background-color: $green;
+  }
+
+  .blue-text {
+    color: $blue;
+  }
+
+  .red-text {
+    color: $red;
+  }
+
+  .green-text {
+    color: $green;
+  }
+
+  .border-bottom- {
+    &blue {
+      border-bottom-color: $blue;
+    }
+
+    &red {
+      border-bottom-color: $red;
+    }
+
+    &green {
+      border-bottom-color: $green;
+    }
+  }
+}

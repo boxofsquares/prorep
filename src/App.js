@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.scss';
+import './colors.scss';
 import VoteSlider from './slider.js';
 import Names from './names.json';
 
@@ -114,22 +115,22 @@ class Parliament extends Component {
         { html }
         </div>
         <div id="legend">
-          <span className="district">District Seat</span>
-          <span className="region">Region Seat</span>
+          <span className="district"><span className="red-fill"></span>District Seat</span>
+          <span className="region"><span className="red-fill">R</span>Region Seat</span>
         </div>
         <div id="parliament-breakdown">
           <div></div>
           <h3 className="popular">Popular Vote</h3>
           <h3 className="representation">Representation</h3>
-          <h3 className="title blue">Blue Party</h3>
-          <div className="percentage blue">{`${(blue / total * 100).toPrecision(4)}%`}</div>
-          <div className="percentage blue">{`${(overall.blue / overall.total * 100).toPrecision(4)}%`}</div>
-          <h3 className="title red">Red Party</h3>
-          <div className="percentage red">{`${(red / total * 100).toPrecision(4)}%`}</div>
-          <div className="percentage red">{`${(overall.red / overall.total * 100).toPrecision(4)}%`}</div>
-          <h3 className="title green">Green Party</h3>
-          <div className="percentage green">{`${(green / total * 100).toPrecision(4)}%`}</div>
-          <div className="percentage green">{`${(overall.green / overall.total * 100).toPrecision(4)}%`}</div>
+          <h3 className="title blue-text">Blue Party</h3>
+          <div className="percentage blue-text">{`${(blue / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage blue-text">{`${(overall.blue / overall.total * 100).toPrecision(4)}%`}</div>
+          <h3 className="title red-text">Red Party</h3>
+          <div className="percentage red-text">{`${(red / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage red-text">{`${(overall.red / overall.total * 100).toPrecision(4)}%`}</div>
+          <h3 className="title green-text">Green Party</h3>
+          <div className="percentage green-text">{`${(green / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage green-text">{`${(overall.green / overall.total * 100).toPrecision(4)}%`}</div>
         </div>
       </div>
     )
@@ -170,7 +171,7 @@ class Parliament extends Component {
   buildSeats(allSeats) {
     return allSeats.map((seat) => {
       return (
-        <div id={seat.districtId} className={'seat ' + seat.party + " " + seat.type}></div>
+        <div id={seat.districtId} className={'seat ' + seat.party +"-fill " + seat.type}>{ seat.type === 'region' ? 'R' : ''}</div>
       )
     });
   }
@@ -194,7 +195,7 @@ class Parliament extends Component {
     let regionSeats = []
     for(let i = 0; i < NO_OF_REGION_SEATS; i++) {
       let delta = ["blue","red","green"].reduce((acc, party) => {
-        let margin = seatsByParty[party] /  (directSeats.length + NO_OF_REGION_SEATS) - overall[party] / 100 ;
+        let margin = seatsByParty[party] /  (directSeats.length + NO_OF_REGION_SEATS) - overall[party] / overall.total ;
         if (margin < 0) {
           if (margin < acc.d) {
             acc = { party: party, d: margin};
@@ -252,11 +253,11 @@ class Region extends Component {
     let _total = this.props.details.overall.total;
     return (
       <div className="vote-bar">
-        <div className="vote-bar-blue" style={{width: overall["blue"]/_total * 100 + "%"}}>
+        <div className="vote-bar-range blue-fill" style={{width: overall["blue"]/_total * 100 + "%"}}>
         </div>
-        <div className="vote-bar-red" style={{width: overall["red"]/_total * 100 + "%"}}>
+        <div className="vote-bar-range red-fill" style={{width: overall["red"]/_total * 100 + "%"}}>
         </div>
-        <div className="vote-bar-green" style={{width: overall["green"]/_total * 100 +"%"}}>
+        <div className="vote-bar-range green-fill" style={{width: overall["green"]/_total * 100 +"%"}}>
         </div>
       </div>
     )
@@ -300,23 +301,11 @@ class District extends Component {
   render() {
     const { results } = this.props.details;
     const { locked } = this.state;
-
+    const winner = this.getWinner()["party"];
     return (
-      <div className={"district " + this.getWinner()["party"]}>
+      <div className={"district " + winner + " border-bottom-" + winner}>
         <h2>{this.props.name}</h2>
-        {/* <label>Party Blue</label>
-        <input name="blue-votes" type="range" min="0" max="100" value={results.blue.votes} onChange={this.handleChange} /> */}
         <VoteSlider low={results.blue.votes} high={results.blue.votes + results.red.votes} handleChange={this.handleSliderChange}/>
-        {/* <span>{results.blue.votes + '%'}</span> 
-        <input name="blue-locked" type='checkbox' checked={locked.blue}  onChange={this.handleChange} />
-        <label>Party Red</label>
-        <input name="red-votes" type="range"  min="0" max="100" value={results.red.votes} onChange={this.handleChange} />
-        <span>{results.red.votes + '%'}</span> 
-        <input name="red-locked" type='checkbox' checked={locked.red}  onChange={this.handleChange} />
-        <label>Party Green</label>
-        <input name="green-votes" type="range"  min="0" max="100" value={results.green.votes} onChange={this.handleChange} />
-        <span>{results.green.votes + '%'}</span> 
-        <input name="green-locked" type='checkbox' checked={locked.green}  onChange={this.handleChange} /> */}
       </div>
     );
   }
