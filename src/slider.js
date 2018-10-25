@@ -101,29 +101,35 @@ class VoteSlider extends Component {
 
     if (screenX < xPos) {
       if (dial === "left") {
-        _low = _low - this.increment >= 0 ? _low - this.increment : _low;
+        _low -= this.increment;
+        if (_low < 0) return
+        let validValue = this.checkBounds(_low, _high);
+        if (!validValue) _low -= this.increment;
       } else {
-        _high = _high - this.increment >= _low ? _high - this.increment : _high;
-      }
-      if (_low >= 1/3 * 100 && _low == 100 - _high) {
-        if (dial === "left") {
-          _low = _low - this.increment;
-        } else {
-          _high = _high - this.increment;
+        _high -= this.increment;
+        if (_high < _low) return;
+        let validValue = this.checkBounds(_low, _high);
+        if (!validValue) {
+          if (_high - this.increment > _low) {
+            _high -= this.increment;
+          } else { return ;}
         }
       }
     } else if (screenX > xPos) {
       if (dial === "left") {
-        _low = _low + this.increment <= _high ? _low + this.increment : _low;
-      } else {
-        _high = _high + this.increment <= 100 ? _high + this.increment : _high;
-      }
-      if (_low >= 1/3 * 100 && _low == 100 - _high) {
-        if (dial === "left") {
-          _low = _low + this.increment;
-        } else {
-          _high = _high + this.increment;
+        _low += this.increment;
+        if (_low > _high) return;
+        let validValue = this.checkBounds(_low, _high);
+        if (!validValue) {
+          if (_low + this.increment < _high) {
+            _low += this.increment;
+          } else { return ;}
         }
+      } else {
+        _high += this.increment;
+        if (_high > 100) return
+        let validValue = this.checkBounds(_low, _high);
+        if (!validValue) _high += this.increment;
       }
     }
     this.update({
@@ -133,6 +139,13 @@ class VoteSlider extends Component {
   }
 
   // Helpers
+  checkBounds(low, high) {
+    return (
+      (low < 1/3 * 100 || (low != 100 - high && low != high - low)) &&
+      (100 - high < 1/3 * 100 || high - low != 100 - high)
+    );
+  }
+
   resetDial() {
     this.setState({
       xPos: null,
