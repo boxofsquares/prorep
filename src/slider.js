@@ -10,10 +10,16 @@ class VoteSlider extends Component {
     this.handleMouseDownLeft = this.handleMouseDownLeft.bind(this);
     this.handleMouseDownRight = this.handleMouseDownRight.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleTouchStartLeft = this.handleTouchStartLeft.bind(this);
+    this.handleTouchStartRight = this.handleTouchStartRight.bind(this);
+    this.handleTouchMove = this.handleTouchMove.bind(this);
+    this.handleTouchEnd = this.handleTouchEnd.bind(this);
     this.increment = 1;
     this.state = {
       xPos: null,
       mouseDown: false,
+      touchDown: false,
+      touchIdentifier: null,
       dial: null,
       animationStart: false,
     };
@@ -26,8 +32,10 @@ class VoteSlider extends Component {
       <div 
         className="slider-container"
         onMouseUp={this.handleMouseUp} 
-        onMouseLeave={this.handleMouseUp}
+        // onMouseLeave={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
+        onTouchMove={this.handleTouchMove}
+        onTouchEnd={this.handleTouchEnd}
         >
         <div className="slider-rail">
         <div className="slider-bar-wrapper">
@@ -54,6 +62,7 @@ class VoteSlider extends Component {
                   className={"slider-dial"} 
                   style={lowDial} 
                   onMouseDown={this.handleMouseDownLeft}
+                  onTouchStart={this.handleTouchStartLeft}
                   >
                 </div>
               </CSSTransition>
@@ -71,6 +80,7 @@ class VoteSlider extends Component {
                     className={"slider-dial"}  
                     style={highDial} 
                     onMouseDown={this.handleMouseDownRight} 
+                    onTouchStart={this.handleTouchStartRight}
                     >
                   </div>
               </CSSTransition>
@@ -87,9 +97,12 @@ class VoteSlider extends Component {
 
   // Handlers
   handleMouseDownLeft(event) {
+      const { touchDown } = this.state;
       let { screenX } = event;
       event.preventDefault();
       event.stopPropagation();
+
+      if (touchDown) return;
      this.setState({
       xPos: screenX,
       mouseDown: true, 
@@ -98,9 +111,12 @@ class VoteSlider extends Component {
   }
 
   handleMouseDownRight(event) {
+    const { touchDown } = this.state;
     let { screenX } = event;
     event.preventDefault();
     event.stopPropagation();
+
+    if (touchDown) return;
     this.setState({
      xPos: screenX,
      mouseDown: true, 
@@ -108,22 +124,85 @@ class VoteSlider extends Component {
     });
  }
 
+  handleTouchStartLeft(event) {
+    event.stopPropagation();
+    const { touches } = event;
+    const { mouseDown } = this.state;
+    if (mouseDown) return;
+    if (touches.length > 1) return;
+
+    const {screenX, identifier } = touches[0];
+
+    this.setState({
+      touchDown: true,
+      touchIdentifier: identifier,
+      x: screenX,
+      dial: "left",
+    });
+  }
+
+  handleTouchStartRight(event) {
+    event.stopPropagation();
+    const { touches } = event;
+    const { mouseDown } = this.state;
+    if (mouseDown) return;
+    if (touches.length > 1) return;
+
+    const {screenX, identifier } = touches[0];
+
+    this.setState({
+      touchDown: true,
+      touchIdentifier: identifier,
+      x: screenX,
+      dial: "right",
+    });
+  }
+
   stopBubble(event) {
     event.preventDefault();
     event.stopPropagation();
   }
 
   handleMouseUp() {
+    const {touchDown} = this.state;
+    if (touchDown) return;
     this.resetDial();
   }
 
+  handleTouchEnd() {
+    const {mouseDown} = this.state;
+    if (mouseDown) return;
+    this.resetDial();
+  }
+  
+  handleTouchMove(event) {
+    const { changedTouches }= event;
+    const { mouseDown, touchDown, touchIdentifier } = this.state;
+
+    event.stopPropagation();
+    if (mouseDown) return;
+    if (!touchDown) return;
+    for(let touch of changedTouches) {
+      const { identifier, screenX } = touch;
+      if (identifier === touchIdentifier) {
+        console.log('in');
+        this.verifyMove(screenX);
+      }
+    }
+  }
+
   handleMouseMove({ screenX }) {
-    const { xPos, mouseDown, dial } = this.state;
+    const { mouseDown, touchDown } = this.state;
+    if (touchDown) return;
+    if (!mouseDown) return;
+    this.verifyMove(screenX); 
+  }
+
+  verifyMove(screenX) {
+    const { xPos, dial } = this.state;
     const { low, high } = this.props;
-    if (!mouseDown) return; 
     let _low = low;
     let _high = high;
-
     if (screenX < xPos) {
       if (dial === "left") {
         _low -= this.increment;
@@ -163,6 +242,7 @@ class VoteSlider extends Component {
     }, screenX)
   }
 
+
   // Helpers
   checkBounds(low, high) {
     return (
@@ -175,6 +255,8 @@ class VoteSlider extends Component {
     this.setState({
       xPos: null,
       mouseDown: false,
+      touchDown: false,
+      touchIdentifier: null,
       dial: null,
     });
   }
