@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import "./slider.scss";
 import "./colors.scss";
 
@@ -14,6 +15,7 @@ class VoteSlider extends Component {
       xPos: null,
       mouseDown: false,
       dial: null,
+      animationStart: false,
     };
   }
 
@@ -36,20 +38,43 @@ class VoteSlider extends Component {
           <div className="slider-right green-fill" style={rightBar} onMouseDown={this.stopBubble}>
           </div>
           </div>
-          <div 
-            id={"left-dial"}
-            className="slider-dial"
-            style={lowDial} 
-            onMouseDown={this.handleMouseDownLeft}
+          <TransitionGroup>
+            <CSSTransition
+              timeout={1000}
+              in={true}
+              classNames="dial"
+              appear={true}
+              onEntering={() => {
+                this.setState({animationStart: true});
+              }}
             >
-          </div>
+            <div 
+              id={"left-dial"}
+              key={1}
+              className={"slider-dial"} 
+              style={lowDial} 
+              onMouseDown={this.handleMouseDownLeft}
+              >
+            </div>
+            </CSSTransition>
+            <CSSTransition
+                          timeout={1000}
+                          in={true}
+                          classNames="dial"
+                          appear={true}
+                          onEntering={() => {
+                            this.setState({animationStart: true});
+                          }}>
           <div 
             id={"right-dial"}
-            className="slider-dial" 
+            key={2}
+            className={"slider-dial"}  
             style={highDial} 
             onMouseDown={this.handleMouseDownRight} 
             >
           </div>
+          </CSSTransition>
+          </TransitionGroup>
           </div>
         <div className="slider-legend">
           <div className="label-left blue-text">{leftLabel}</div>
@@ -160,8 +185,8 @@ class VoteSlider extends Component {
       leftBar: {width: `${low}%` }, 
       middleBar: {width: `${high - low}%`},
       rightBar: {width: `${100-high}%`},
-      lowDial: {left: `${low}%`},
-      highDial: {left: `${high}%`},
+      lowDial: this.state.animationStart ? {left: `${low}%`} : {},
+      highDial: this.state.animationStart ? {left: `${high}%`} : {},
     }
   }
 

@@ -31,6 +31,14 @@ $rail-height: 3rem;
       border-right: 1rem solid transparent;
       border-bottom: 1rem solid black;
 
+      &.dial-appear, &.dial-enter,  {
+        left: 0%;
+      }
+
+      &.dial-appear.dial-appear-active {
+        transition: left 1s ease-out;
+      }
+
       &:before {
         content: '';
         position: absolute;
