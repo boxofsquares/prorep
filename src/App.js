@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import uuid from 'uuid';
+
 import './App.scss';
 import './colors.scss';
 import VoteSlider from './slider.js';
 import Names from './names.json';
+import Info from './info.json';
 
 const TOTAL_VOTES = 100;
 const NO_OF_REGIONS = 4;
@@ -20,6 +23,7 @@ class App extends Component {
     this.initializeState()
     this.onRegionChange = this.onRegionChange.bind(this);
     this.toggleSystem = this.toggleSystem.bind(this);
+    this.toggleInfo = this.toggleInfo.bind(this);
   }
 
   initializeState() {
@@ -61,6 +65,13 @@ class App extends Component {
   }
 
   render() {
+    let { toggleInfo } = this.state;
+    
+    let infoBox; 
+    infoBox = toggleInfo ? 
+      <span className="info info-box">{Info.mmp}<span className="info-close" onClick={this.toggleInfo}>X</span></span> : 
+      <span className="info info-tag" onClick={this.toggleInfo}>?</span>;
+    
     return (
       <div className="App">
       <div id="left-pane">
@@ -71,12 +82,13 @@ class App extends Component {
           <button name="MMP" className={"right-toggle " + (this.state.system == VotingSystem.FPTP ? "" : "selected")} onClick={this.toggleSystem}>
             MMP
           </button>
+          { infoBox }
         </div>
         <Parliament election={this.state} />
       </div>
        <div id="regions">
           <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onRegionChange}/>
-          <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange}/>
+          <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange} showInfo={true}/>
           <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onRegionChange}/>
           <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onRegionChange}/>
         </div>
@@ -100,6 +112,10 @@ class App extends Component {
       system: VotingSystem[target.name],
     });
   }
+
+  toggleInfo() {
+    this.setState({toggleInfo : !this.state.toggleInfo})
+  }
 }
 
 class Parliament extends Component {
@@ -111,8 +127,10 @@ class Parliament extends Component {
     return(
       <div id="parliament-wrapper">
         <h1>Parliament</h1>
-        <div id="parliament">
-        { html }
+        <div
+          key={this.props.election.system}
+         id="parliament">
+          { html }
         </div>
         <div id="legend">
           <span className="district"><span className="red-fill"></span>District Seat</span>
@@ -169,12 +187,22 @@ class Parliament extends Component {
   }
 
   buildSeats(allSeats) {
-    return allSeats.map((seat) => {
-      return (
-        <div id={seat.districtId} className={'seat ' + seat.party +"-fill " + seat.type}>{ seat.type === 'region' ? 'R' : ''}</div>
-      )
-    });
-  }
+  let base = this.props.election.system === VotingSystem.FTFP ? 0 : 100;
+    return (
+        allSeats.map((seat, index) => {
+          return (
+            <CSSTransition
+            timeout={600}
+            classNames="seat"
+            in={true}
+            appear={true}
+            >
+              <div className={'seat ' + seat.party +"-fill " + seat.type}>{ seat.type === 'region' ? 'R' : ''}</div>
+            </CSSTransition>
+          )
+        })
+    )
+   }
 
   getWinner(districtObj) {
     return Object.keys(districtObj.results).reduce((acc, _party) => {
@@ -229,16 +257,33 @@ class Region extends Component {
   constructor(props) {
     super(props);
     this.onDistrictChange = this.onDistrictChange.bind(this);
+    this.toggleInfo = this.toggleInfo.bind(this);
+    this.state = {
+      toggleInfo: false,
+    };
   }
 
   render() {
-    let details = this.props.details;
+    let { showInfo, details } = this.props;
+    let { toggleInfo } = this.state;
+    let infoBox; 
+
+    if (showInfo) {
+      infoBox = toggleInfo ? 
+        <span className="info info-box" >{Info.region}<span className="info-close" onClick={this.toggleInfo}>X</span></span> : 
+        <span className="info info-tag" onClick={this.toggleInfo}>?</span>;
+    }
+
+
     return (
       <div className="region">
-        <h1>{details.regionAttr.regionName}</h1>
+        <div className="region-title-wrapper">
+          <h1>{details.regionAttr.regionName}</h1>
+          { infoBox }
+        </div>
         <div className="districts">
         <District details={details.districts[0]} name={details.regionAttr.districts[0]} notifyParent={this.onDistrictChange}/>
-        <District details={details.districts[1]} name={details.regionAttr.districts[1]} notifyParent={this.onDistrictChange}/>
+        <District details={details.districts[1]} name={details.regionAttr.districts[1]} notifyParent={this.onDistrictChange} showInfo={showInfo}/>
         <District details={details.districts[2]} name={details.regionAttr.districts[2]} notifyParent={this.onDistrictChange}/>
         <District details={details.districts[3]} name={details.regionAttr.districts[3]} notifyParent={this.onDistrictChange}/>
 
@@ -282,29 +327,42 @@ class Region extends Component {
       _regionState
     );
   }
+
+  toggleInfo() {
+    this.setState({ toggleInfo: !this.state.toggleInfo });
+  }
 }
 
 class District extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      locked: {
-        red: false,
-        blue: false,
-        green: false,
-      },
-    };
+      toggleInfo: false,
+    }
     this.handleChange = this.handleChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
+    this.toggleInfo = this.toggleInfo.bind(this);
   }
   
   render() {
     const { results } = this.props.details;
-    const { locked } = this.state;
+    const { showInfo } = this.props;
+    const { toggleInfo } = this.state;
     const winner = this.getWinner()["party"];
+
+    let infoBox; 
+    if (showInfo) {
+      infoBox = toggleInfo ? 
+        <span className="info info-box" >{Info.district}<span className="info-close" onClick={this.toggleInfo}>X</span></span> : 
+        <span className="info info-tag" onClick={this.toggleInfo}>?</span>;
+    }
+
     return (
       <div className={"district " + winner + " border-bottom-" + winner}>
-        <h2>{this.props.name}</h2>
+        <div className="district-title-wrapper">
+          <h2>{this.props.name}</h2>
+          { infoBox }
+        </div>
         <VoteSlider low={results.blue.votes} high={results.blue.votes + results.red.votes} handleChange={this.handleSliderChange}/>
       </div>
     );
@@ -367,7 +425,6 @@ class District extends Component {
           break;
         default:
       }
-      
     }
   
     distributeRemainder(party, remainder) {
@@ -400,6 +457,10 @@ class District extends Component {
           return acc;
         }
       }, {party: "", votes: 0 })
+    }
+
+    toggleInfo() {
+      this.setState({ toggleInfo: !this.state.toggleInfo });
     }
 }
 

@@ -1,3 +1,5 @@
+$small-size: 800px;
+
 * {
   padding: 0px;
   margin: 0px;
@@ -11,8 +13,53 @@
   justify-items: stretch;
   align-items: stretch;
 
-  @media screen and (max-width: 600px) {
+  @media screen and (max-width: $small-size) {
     grid-template-columns: repeat(1, 1fr);
+  }
+
+  /// HELP BOXES
+  .region-title-wrapper,.district-title-wrapper,#system-toggle {
+    position: relative;
+
+    .info {
+      position: absolute;
+      top: 0rem;
+      right: 0rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .info-tag {
+      cursor: pointer;
+      align-content: left;
+      border: 1px solid black;
+      border-radius: 100%;
+      font-size: 1rem;
+      line-height: 1rem;
+      margin-left: 0.5rem;
+      height: 1.5rem;
+      width: 1.5rem;
+      font-weight: bold;
+    }
+
+    .info-box {
+      background: white;
+      z-index: 99;
+      max-width: 20rem;
+      padding: 2rem;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.23),
+        0 5px 5px rgba(0, 0, 0, 0.25);
+      width: 100%;
+
+      .info-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        cursor: pointer;
+        font-weight: bold;
+      }
+    }
   }
 
   #left-pane {
@@ -23,7 +70,7 @@
     padding: 3rem;
     box-shadow: 0px 0px 32px rgba(0, 0, 0, 0.48) inset;
 
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width: $small-size) {
       box-shadow: none;
     }
 
@@ -64,6 +111,7 @@
         &.left-toggle.selected:after {
           right: 0;
         }
+
         &.right-toggle.selected:after {
           left: 0;
         }
@@ -84,7 +132,7 @@
         align-content: center;
         grid-gap: 0.5rem;
 
-        @media screen and (max-width: 600px) {
+        @media screen and (max-width: $small-size) {
           height: auto;
           max-height: none;
         }
@@ -96,10 +144,23 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: background-color 0.5s ease-out;
+          transition: background-color 1s ease-in-out;
           color: white;
           font-weight: bold;
           font-size: 2rem;
+        }
+
+        .seat-appear,.seat-enter {
+          transform: scale(0.1);
+        }
+
+        .seat-appear.seat-appear-active, .set-enter.seat-enter-active {
+          transform: scale(1);
+          transition: transform 0.5s ease-in-out;
+        }
+
+        .seat-exit {
+          transform: scale(0.1);
         }
 
         .green-fill {
@@ -185,19 +246,18 @@
   }
 
   #regions {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-flow: row;
     justify-items: space-around;
     justify-content: space-around;
     align-items: stretch;
-    box-shadow: -16px 0px 48px rgba(0, 0, 0, 0.33),
-      -5px 0 10px rgba(0, 0, 0, 0.35);
     padding: 1rem;
     height: 100vh;
     box-sizing: border-box;
 
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width: $small-size) {
       grid-template-columns: repeat(1, 1fr);
       box-shadow: none;
       padding: 0;
@@ -208,6 +268,7 @@
       flex-direction: column;
       justify-content: space-around;
       padding: 0 1rem 0 1rem;
+      }
 
       .districts {
         display: grid;
@@ -227,7 +288,9 @@
             grid-column: 1/5;
           }
 
-          &.border-bottom-red, &.border-bottom-blue, &.border-bottom-green {
+          &.border-bottom-red,
+          &.border-bottom-blue,
+          &.border-bottom-green {
             border-bottom-style: solid;
             border-bottom-width: 0.5rem;
           }
@@ -251,5 +314,4 @@
         }
       }
     }
-  }
 }

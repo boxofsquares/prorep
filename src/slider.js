@@ -39,42 +39,42 @@ class VoteSlider extends Component {
           </div>
           </div>
           <TransitionGroup>
-            <CSSTransition
-              timeout={1000}
-              in={true}
-              classNames="dial"
-              appear={true}
-              onEntering={() => {
-                this.setState({animationStart: true});
-              }}
-            >
-            <div 
-              id={"left-dial"}
-              key={1}
-              className={"slider-dial"} 
-              style={lowDial} 
-              onMouseDown={this.handleMouseDownLeft}
+              <CSSTransition
+                timeout={1000}
+                in={true}
+                classNames="dial"
+                appear={true}
+                onEntering={() => {
+                  this.setState({animationStart: true});
+                }}
               >
-            </div>
-            </CSSTransition>
-            <CSSTransition
-                          timeout={1000}
-                          in={true}
-                          classNames="dial"
-                          appear={true}
-                          onEntering={() => {
-                            this.setState({animationStart: true});
-                          }}>
-          <div 
-            id={"right-dial"}
-            key={2}
-            className={"slider-dial"}  
-            style={highDial} 
-            onMouseDown={this.handleMouseDownRight} 
-            >
-          </div>
-          </CSSTransition>
-          </TransitionGroup>
+                <div 
+                  id={"left-dial"}
+                  key={1}
+                  className={"slider-dial"} 
+                  style={lowDial} 
+                  onMouseDown={this.handleMouseDownLeft}
+                  >
+                </div>
+              </CSSTransition>
+              <CSSTransition
+                timeout={1000}
+                in={true}
+                classNames="dial"
+                appear={true}
+                onEntering={() => {
+                  this.setState({animationStart: true});
+                }}>
+                  <div 
+                    id={"right-dial"}
+                    key={2}
+                    className={"slider-dial"}  
+                    style={highDial} 
+                    onMouseDown={this.handleMouseDownRight} 
+                    >
+                  </div>
+              </CSSTransition>
+            </TransitionGroup>
           </div>
         <div className="slider-legend">
           <div className="label-left blue-text">{leftLabel}</div>
