@@ -6,7 +6,7 @@ import './colors.scss';
 import VoteSlider from './slider.js';
 import Names from './names.json';
 import Info from './info.json';
-
+import logo from './vote_white.svg';
 const NO_OF_REGIONS = 4;
 const NO_OF_DISTRICTS = 4;
 const NO_OF_REGION_SEATS = 2;
@@ -76,7 +76,7 @@ class App extends Component {
     return (
       <div className="App">
         <div id='top-bar' className="red-fill">
-          <div id='logo'><h2>ProRep</h2><span> Vote <i>YES</i> on the referendum!</span></div>
+          <div id='logo'><img src={logo} /><h2>ProRep</h2><span> Vote <i>YES</i> on the referendum!</span></div>
           <ul>
             <li>Please also check out:</li>
             <li className="link"><a href="https://elections.bc.ca/referendum">Elections BC</a></li>
@@ -104,6 +104,7 @@ class App extends Component {
         </div>
         <div id='bottom-bar' className="red-fill">
           <span>Made by <a href="https://github.com/boxofsquares">Jako {"\u25F3"}</a></span>
+          <span className="credit">all icons used by Kiran from the Noun Project</span>
         </div>
       </div>
     );
