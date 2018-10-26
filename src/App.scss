@@ -1,3 +1,4 @@
+@import "./colors.scss";
 $small-size: 800px;
 
 * {
@@ -5,20 +6,68 @@ $small-size: 800px;
   margin: 0px;
 }
 
+html {
+  font-size: 12px;
+}
+
 .App {
   text-align: center;
   display: grid;
-  grid-template-columns: repeat(2, auto);
+  justify-items: space-between;
+  grid-template:
+    "top-bar top-bar"3rem "left-pane regions"auto "bottom-bar bottom-bar"3rem;
   height: 100vh;
-  justify-items: stretch;
-  align-items: stretch;
 
   @media screen and (max-width: $small-size) {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template:
+    "top-bar" 3rem "left-pane" auto  "regions" auto "bottom-bar"3rem;
+  }
+
+  a, a:visited, a:focus {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  #top-bar,
+  #bottom-bar {
+    display: flex;
+    box-sizing: border-box;
+    padding: 1rem;
+    align-items: center;
+  }
+
+  #top-bar {
+    grid-area: top-bar;
+    justify-content: space-between;
+    align-items: center;
+    #logo {
+      h2 {
+        display: inline-block;
+      }
+    }
+    ul {
+      list-style: none;
+
+      li {
+        display: inline-block;
+        padding-left: 1rem;
+        
+        &.link {
+          font-weight: bolder;
+        }
+      }
+    }
+  }
+
+  #bottom-bar {
+    grid-area: bottom-bar;
+    justify-content: flex-end;
   }
 
   /// HELP BOXES
-  .region-title-wrapper,.district-title-wrapper,#system-toggle {
+  .region-title-wrapper,
+  .district-title-wrapper,
+  #system-toggle {
     position: relative;
 
     .info {
@@ -38,8 +87,8 @@ $small-size: 800px;
       font-size: 1rem;
       line-height: 1rem;
       margin-left: 0.5rem;
-      height: 1.5rem;
-      width: 1.5rem;
+      height: 1rem;
+      width: 1rem;
       font-weight: bold;
     }
 
@@ -64,11 +113,11 @@ $small-size: 800px;
 
   #left-pane {
     display: flex;
+    grid-area: left-pane;
     flex-direction: column;
     justify-content: space-between;
     box-sizing: border-box;
-    padding: 3rem;
-    box-shadow: 0px 0px 32px rgba(0, 0, 0, 0.48) inset;
+    padding: 1rem;
 
     @media screen and (max-width: $small-size) {
       box-shadow: none;
@@ -77,7 +126,7 @@ $small-size: 800px;
     #system-toggle {
       button {
         line-height: 2rem;
-        padding: 1rem;
+        padding: 0.5rem 1rem 0.5rem 1rem;
         text-decoration: none;
         background: none;
         border: none;
@@ -96,7 +145,7 @@ $small-size: 800px;
           width: 100%;
           position: absolute;
           bottom: 0;
-          background-color: red;
+          background-color: $red;
           transition: left 0.5s ease-out, right 0.5s ease-out;
         }
 
@@ -131,12 +180,13 @@ $small-size: 800px;
         align-items: center;
         align-content: center;
         grid-gap: 0.5rem;
+        padding-top: 1rem;
 
         @media screen and (max-width: $small-size) {
           height: auto;
           max-height: none;
         }
-
+        
         .seat {
           height: 5rem;
           width: 5rem;
@@ -150,17 +200,15 @@ $small-size: 800px;
           font-size: 2rem;
         }
 
-        .seat-appear,.seat-enter {
+        .seat-appear,
+        .seat-enter {
           transform: scale(0.1);
         }
 
-        .seat-appear.seat-appear-active, .set-enter.seat-enter-active {
+        .seat-appear.seat-appear-active,
+        .set-enter.seat-enter-active {
           transform: scale(1);
           transition: transform 0.5s ease-in-out;
-        }
-
-        .seat-exit {
-          transform: scale(0.1);
         }
 
         .green-fill {
@@ -201,45 +249,33 @@ $small-size: 800px;
       }
 
       #parliament-breakdown {
-        padding-top: 5rem;
+        padding-top: 1rem;
         display: grid;
-        grid-template-columns: repeat(3, size-max);
+        grid-template-columns: repeat(2, auto);
         justify-content: center;
-        grid-gap: 1rem;
+        grid-row-gap: 0.2rem;
+        grid-column-gap: 0.8rem;
         font-weight: bold;
+        justify-items: center;
 
-        .popular {
-          grid-area: 1 / 2 / 2 / 3;
-        }
+        .percentage {
+          width: 5rem;
+          height: 5rem;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          border-radius: 0.2rem;
+          font-size: 1.2rem;
+          transform-origin: center;
+          
+          &:nth-of-type(odd) {
+            justify-self: end;
+          }
 
-        .representation {
-          grid-area: 1 / 3 / 2 / 4;
-        }
-
-        .title.blue {
-          grid-area: 2 / 1 / 3 / 2;
-        }
-
-
-        .title.red {
-          grid-area: 3 / 1 / 4 / 2;
-        }
-
-
-        .title.green {
-          grid-area: 4 / 1 / 5 / 2;
-        }
-
-        .blue {
-          color: blue;
-        }
-
-        .red {
-          color: red,
-        }
-
-        .green {
-          color: green,
+          &:nth-of-type(even) {
+            justify-self: start;
+          }
         }
       }
     }
@@ -247,14 +283,13 @@ $small-size: 800px;
 
   #regions {
     position: relative;
+    grid-area: regions;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-flow: row;
-    justify-items: space-around;
-    justify-content: space-around;
+    justify-items: stretch;
     align-items: stretch;
     padding: 1rem;
-    height: 100vh;
     box-sizing: border-box;
 
     @media screen and (max-width: $small-size) {
@@ -266,52 +301,52 @@ $small-size: 800px;
     .region {
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
+      justify-content: space-evenly;
       padding: 0 1rem 0 1rem;
-      }
+    }
 
-      .districts {
-        display: grid;
-        grid-template: repeat(2, 1fr) / repeat(2, 1fr);
-        grid-gap: 1rem;
-        position: relative;
+    .districts {
+      display: grid;
+      grid-template: repeat(2, 1fr) / repeat(2, 1fr);
+      grid-gap: 1rem;
+      position: relative;
 
-        .district {
-          display: flex;
-          flex-direction: column;
-          padding: 0.5rem;
-          box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.23),
-            0 5px 5px rgba(0, 0, 0, 0.25);
-          transition: border 0.2s linear;
+      .district {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.23),
+          0 3px 3px rgba(0, 0, 0, 0.25);
+        transition: border 0.2s linear;
 
-          h2 {
-            grid-column: 1/5;
-          }
-
-          &.border-bottom-red,
-          &.border-bottom-blue,
-          &.border-bottom-green {
-            border-bottom-style: solid;
-            border-bottom-width: 0.5rem;
-          }
-        }
-      }
-
-      .vote-bar {
-        height: 2rem;
-        grid-column: 1/3;
-        border-radius: 2.5rem;
-        overflow: hidden;
-
-        div {
-          height: 5rem;
-          display: inline-block;
-          box-shadow: -6px 0px 16px rgba(0, 0, 0, 0.23),
+        h2 {
+          grid-column: 1/5;
         }
 
-        .vote-bar-range {
-          height: 5rem;
+        &.border-bottom-red,
+        &.border-bottom-blue,
+        &.border-bottom-green {
+          border-bottom-style: solid;
+          border-bottom-width: 0.5rem;
         }
       }
     }
+
+    .vote-bar {
+      height: 2rem;
+      grid-column: 1/3;
+      border-radius: 2.5rem;
+      overflow: hidden;
+
+      div {
+        height: 5rem;
+        display: inline-block;
+        box-shadow: -0.3rem 0px 0.5rem rgba(0, 0, 0, 0.23),
+      }
+
+      .vote-bar-range {
+        height: 5rem;
+      }
+    }
+  }
 }

@@ -166,8 +166,8 @@ class VoteSlider extends Component {
   // Helpers
   checkBounds(low, high) {
     return (
-      (low < 1/3 * 100 || (low != 100 - high && low != high - low)) &&
-      (100 - high < 1/3 * 100 || high - low != 100 - high)
+      (low < 1/3 * 100 || (low !== 100 - high && low !== high - low)) &&
+      (100 - high < 1/3 * 100 || high - low !== 100 - high)
     );
   }
 

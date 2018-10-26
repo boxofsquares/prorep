@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import uuid from 'uuid';
+import {CSSTransition } from 'react-transition-group';
 
 import './App.scss';
 import './colors.scss';
@@ -8,7 +7,6 @@ import VoteSlider from './slider.js';
 import Names from './names.json';
 import Info from './info.json';
 
-const TOTAL_VOTES = 100;
 const NO_OF_REGIONS = 4;
 const NO_OF_DISTRICTS = 4;
 const NO_OF_REGION_SEATS = 2;
@@ -20,7 +18,10 @@ const VotingSystem = Object.freeze({
 class App extends Component {
   constructor(props) {
     super(props);
+    
     this.initializeState()
+
+    // Binding Handlers
     this.onRegionChange = this.onRegionChange.bind(this);
     this.toggleSystem = this.toggleSystem.bind(this);
     this.toggleInfo = this.toggleInfo.bind(this);
@@ -60,8 +61,8 @@ class App extends Component {
         total: 400,
       }
       this.state.regions.push(_region);
-      this.state.system = VotingSystem.FPTP;
     }
+    this.state.system = VotingSystem.FPTP;
   }
 
   render() {
@@ -74,23 +75,35 @@ class App extends Component {
     
     return (
       <div className="App">
-      <div id="left-pane">
-        <div id="system-toggle">
-          <button name="FPTP" className={"left-toggle " + (this.state.system == VotingSystem.FPTP ? "selected" : "")} onClick={this.toggleSystem}>
-            FPTP
-          </button>
-          <button name="MMP" className={"right-toggle " + (this.state.system == VotingSystem.FPTP ? "" : "selected")} onClick={this.toggleSystem}>
-            MMP
-          </button>
-          { infoBox }
+        <div id='top-bar' className="red-fill">
+          <div id='logo'><h2>ProRep</h2><span> Vote <i>YES</i> on the referendum!</span></div>
+          <ul>
+            <li>Please also check out:</li>
+            <li className="link"><a href="https://elections.bc.ca/referendum">Elections BC</a></li>
+            <li className="link"><a href="https://voteprbc.ca/get-informed">Vote PR BC</a></li>
+            <li className="link"><a href="https://nobcprorep.ca">No BC ProRep<span role="img" aria-label="crying-emoji">😢</span></a></li>
+          </ul>
         </div>
-        <Parliament election={this.state} />
-      </div>
-       <div id="regions">
+        <div id="left-pane">
+          <div id="system-toggle">
+            <button name="FPTP" className={"left-toggle " + (this.state.system === VotingSystem.FPTP ? "selected" : "")} onClick={this.toggleSystem}>
+              FPTP
+            </button>
+            <button name="MMP" className={"right-toggle " + (this.state.system === VotingSystem.FPTP ? "" : "selected")} onClick={this.toggleSystem}>
+              MMP
+            </button>
+            { infoBox }
+          </div>
+          <Parliament election={this.state} />
+        </div>
+        <div id="regions">
           <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onRegionChange}/>
           <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange} showInfo={true}/>
           <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onRegionChange}/>
           <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onRegionChange}/>
+        </div>
+        <div id='bottom-bar' className="red-fill">
+          <span>Made by <a href="https://github.com/boxofsquares">Jako {"\u25F3"}</a></span>
         </div>
       </div>
     );
@@ -121,15 +134,18 @@ class App extends Component {
 class Parliament extends Component {
 
   render() {
+    let { system } = this.props.election;
     let { allSeats, overall } = this.getAllSeats();
     const { blue, red, green, total} = this.getPopularVote();
     let html = this.buildSeats(allSeats);
+    let baseOp = 1/2;
     return(
       <div id="parliament-wrapper">
         <h1>Parliament</h1>
+        
         <div
-          key={this.props.election.system}
-         id="parliament">
+          key={system}
+          id="parliament">
           { html }
         </div>
         <div id="legend">
@@ -137,18 +153,14 @@ class Parliament extends Component {
           <span className="region"><span className="red-fill">R</span>Region Seat</span>
         </div>
         <div id="parliament-breakdown">
-          <div></div>
-          <h3 className="popular">Popular Vote</h3>
-          <h3 className="representation">Representation</h3>
-          <h3 className="title blue-text">Blue Party</h3>
-          <div className="percentage blue-text">{`${(blue / total * 100).toPrecision(4)}%`}</div>
-          <div className="percentage blue-text">{`${(overall.blue / overall.total * 100).toPrecision(4)}%`}</div>
-          <h3 className="title red-text">Red Party</h3>
-          <div className="percentage red-text">{`${(red / total * 100).toPrecision(4)}%`}</div>
-          <div className="percentage red-text">{`${(overall.red / overall.total * 100).toPrecision(4)}%`}</div>
-          <h3 className="title green-text">Green Party</h3>
-          <div className="percentage green-text">{`${(green / total * 100).toPrecision(4)}%`}</div>
-          <div className="percentage green-text">{`${(overall.green / overall.total * 100).toPrecision(4)}%`}</div>
+          <h2 className="popular">Popular Vote</h2>
+          <h2 className="representation">Representation</h2>
+          <div className="percentage blue-fill" style={{transform: `scale(${this.getOpacity(blue, total, baseOp)})`}}>{`${(blue / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage blue-fill" style={{transform: `scale(${this.getOpacity(overall.blue, overall.total, baseOp)})`}}>{`${(overall.blue / overall.total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage red-fill" style={{transform: `scale(${this.getOpacity(red, total, baseOp)})`}}>{`${(red / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage red-fill" style={{transform: `scale(${this.getOpacity(overall.red, overall.total, baseOp)})`}}>{`${(overall.red / overall.total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage green-fill" style={{transform: `scale(${this.getOpacity(green, total, baseOp)})`}}>{`${(green / total * 100).toPrecision(4)}%`}</div>
+          <div className="percentage green-fill" style={{transform: `scale(${this.getOpacity(overall.green, overall.total, baseOp)})`}}>{`${(overall.green / overall.total * 100).toPrecision(4)}%`}</div>
         </div>
       </div>
     )
@@ -166,6 +178,7 @@ class Parliament extends Component {
             districtId: district.districtId,
             type: "direct",
             party: winner,
+            uuid: district.districtId,
           }
         );
         seatsByParty[winner] += 1;
@@ -177,7 +190,7 @@ class Parliament extends Component {
         allSeats = results.allSeats;
         seatsByParty = results.seatsByParty;
       }
-      acc.allSeats.push(... allSeats);
+      acc.allSeats.push(...allSeats);
       ["blue","red","green","total"].forEach((party) => {
         acc.overall[party] += seatsByParty[party];  
       });
@@ -187,18 +200,18 @@ class Parliament extends Component {
   }
 
   buildSeats(allSeats) {
-  let base = this.props.election.system === VotingSystem.FTFP ? 0 : 100;
     return (
         allSeats.map((seat, index) => {
           return (
             <CSSTransition
             timeout={600}
+            key={seat.uuid}
             classNames="seat"
             in={true}
             appear={true}
             >
               <div className={'seat ' + seat.party +"-fill " + seat.type}>{ seat.type === 'region' ? 'R' : ''}</div>
-            </CSSTransition>
+           </CSSTransition>
           )
         })
     )
@@ -215,7 +228,7 @@ class Parliament extends Component {
   }
 
   distributeRegionalSeats(directSeats, seatsByParty, regionObj) {
-    let { overall } = regionObj;
+    let { overall, regionId } = regionObj;
     // let allSeats = directSeats.reduce((acc, districtSeat) => {
     //   acc[districtSeat.party] += 1;
     //   return acc;
@@ -237,9 +250,10 @@ class Parliament extends Component {
           districtId: 0,
           type: "region",
           party: delta.party,
+          uuid: regionId * 100 + i,
       })
     }
-    return { allSeats: [... directSeats, ...regionSeats], seatsByParty: seatsByParty };
+    return { allSeats: [...directSeats, ...regionSeats], seatsByParty: seatsByParty };
   }
 
   getPopularVote() {
@@ -251,6 +265,10 @@ class Parliament extends Component {
       return acc;
     }, { blue: 0, red: 0, green: 0, total: 0});
   }
+
+  getOpacity(count, total, base) {
+    return (count / total) * (1 - base) + base;
+  } 
 }
 
 class Region extends Component {
@@ -339,7 +357,7 @@ class District extends Component {
     this.state = {
       toggleInfo: false,
     }
-    this.handleChange = this.handleChange.bind(this);
+    // this.handleChange = this.handleChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
     this.toggleInfo = this.toggleInfo.bind(this);
   }
@@ -378,76 +396,7 @@ class District extends Component {
 
       notifyParent({ districtId, results });
     }
-
-    handleChange(event) {
-      let target = event.target;
-      let tags = event.target.name.split('-');
-      let party = tags[0];
-      let key = tags[1];
-      
-      let details = this.props.details;
-      let partyObj = details.results[party];
-      let locked = this.state.locked;
-
-      switch(key) {
-        case 'locked':
-          let _locked = this.state.locked;
-          locked[party] = target.checked;
-          this.setState(_locked);
-          break;
-        case 'votes':
-          let value = event.target.value == "" ? 0 : parseInt(target.value);
-          
-          let benefactors = Object.keys(details.results).filter((_party) => {
-            return !locked[_party] && _party != party;
-          });
-          
-          if (benefactors < 1) {
-            break;
-          }
   
-          // check total seats bound
-          let lockedVotes = Object.keys(details.results).reduce((acc, _party) => {
-            if (party != _party && locked[_party]) {
-              acc += details.results[_party].votes;
-            }
-            return acc;
-          }, 0);
-          
-          let remainder = TOTAL_VOTES - (value + lockedVotes);
-          if (remainder >= 0) {
-            partyObj[key] = value;
-            details.results[party] = partyObj;
-            let updates = this.distributeRemainder(party, remainder);
-            details.results = {...details.results, ...updates};
-          }
-          this.props.notifyParent(details);
-          break;
-        default:
-      }
-    }
-  
-    distributeRemainder(party, remainder) {
-      let details = this.props.details;
-      let benefactors = Object.keys(details.results).filter((_party) => {
-        return !this.state.locked[_party] && _party != party;
-      });
-  
-      let distVotes = Math.floor(remainder / benefactors.length);
-      let overflow =  remainder % benefactors.length;
-      let updates = benefactors.reduce((obj, _party) => {
-        let partyObj = details.results[_party];
-        partyObj.votes = distVotes;
-        if (overflow > 0 ) {
-          partyObj.votes++;
-          overflow--;
-        }
-        obj[_party] = partyObj;
-        return obj;
-      }, {});
-      return updates;
-    }
-
     getWinner() {
       let _results = this.props.details.results;
       return ["blue","red","green"].reduce((acc, _party) => {
