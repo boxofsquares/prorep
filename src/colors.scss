@@ -1,6 +1,6 @@
-$blue: lighten(desaturate(blue, 40), 10);
-$red: lighten(desaturate(red, 20), 10);
-$green:  lighten(desaturate(green, 60), 20);
+$blue: lighten(desaturate(blue, 60), 10);
+$red: lighten(desaturate(red, 40), 10);
+$green:  lighten(desaturate(yellowgreen, 20), 5);
 
 body {
   .blue-fill {

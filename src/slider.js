@@ -32,7 +32,7 @@ class VoteSlider extends Component {
       <div 
         className="slider-container"
         onMouseUp={this.handleMouseUp} 
-        // onMouseLeave={this.handleMouseUp}
+        onMouseLeave={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
         onTouchMove={this.handleTouchMove}
         onTouchEnd={this.handleTouchEnd}
