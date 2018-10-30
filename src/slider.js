@@ -26,6 +26,7 @@ class VoteSlider extends Component {
   }
 
   render() {
+    const { popSliders } = this.props;
     const { leftBar, middleBar, rightBar, lowDial, highDial } = this.getSliderConfigs();
     const { leftLabel, centerLabel, rightLabel } = this.getSliderLabels();
     return (
@@ -59,7 +60,7 @@ class VoteSlider extends Component {
                 <div 
                   id={"left-dial"}
                   key={1}
-                  className={"slider-dial"} 
+                  className={"slider-dial " + (popSliders ? "pop-out" : "") } 
                   style={lowDial} 
                   onMouseDown={this.handleMouseDownLeft}
                   onTouchStart={this.handleTouchStartLeft}
@@ -77,7 +78,7 @@ class VoteSlider extends Component {
                   <div 
                     id={"right-dial"}
                     key={2}
-                    className={"slider-dial"}  
+                    className={'slider-dial ' + (popSliders ? 'pop-out' : '')}  
                     style={highDial} 
                     onMouseDown={this.handleMouseDownRight} 
                     onTouchStart={this.handleTouchStartRight}

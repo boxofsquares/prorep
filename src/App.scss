@@ -13,9 +13,8 @@ html {
 .App {
   text-align: center;
   display: grid;
-  justify-items: space-between;
   grid-template:
-    "top-bar top-bar"max-content "left-pane regions"auto "bottom-bar bottom-bar"max-content;
+    "top-bar top-bar" max-content "left-pane regions"auto "bottom-bar bottom-bar" max-content /  33.33% auto;
   height: 100vh;
 
   @media screen and (max-width: $small-size) {
@@ -28,6 +27,15 @@ html {
   a:focus {
     text-decoration: none;
     color: inherit;
+  }
+
+  @keyframes pop-out {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.4); color: white;}
+  }
+
+  .pop-out {
+    animation:  pop-out 0.5s alternate infinite;
   }
 
   #top-bar,
@@ -145,6 +153,7 @@ html {
     grid-area: left-pane;
     flex-direction: column;
     justify-content: space-between;
+    align-items: center;
     box-sizing: border-box;
     padding: 1rem;
 
@@ -152,9 +161,30 @@ html {
       box-shadow: none;
     }
 
+    #left-upper {
+      align-self: flex-start;
+      width: 100%;
+      
+      .info-box-persistent {
+        display: flex;
+        flex-direction: column;
+          text-align: left;
+        border-left: 0.5rem solid $red; 
+        padding-left: 0.5rem;
+        align-self: flex-start;
+      }
+
+      .pop-link {
+        cursor: pointer;
+      }
+    }
+
     #system-toggle {
+      padding-top: 1.8rem;
+
       button {
         line-height: 2rem;
+        font-size: 1.8rem;
         padding: 0.5rem 1rem 0.5rem 1rem;
         text-decoration: none;
         background: none;

@@ -25,6 +25,7 @@ class App extends Component {
     this.onRegionChange = this.onRegionChange.bind(this);
     this.toggleSystem = this.toggleSystem.bind(this);
     this.toggleInfo = this.toggleInfo.bind(this);
+    this.hoverInfo = this.hoverInfo.bind(this);
   }
 
   initializeState() {
@@ -63,10 +64,13 @@ class App extends Component {
       this.state.regions.push(_region);
     }
     this.state.system = VotingSystem.FPTP;
+    this.state.poptoggle = false;
+    this.state.popparliament = false;
+    this.state.popslider = false;
   }
 
   render() {
-    let { toggleInfo } = this.state;
+    let { toggleInfo, poptoggle, popslider, popparliament } = this.state;
     
     let infoBox; 
     infoBox = toggleInfo ? 
@@ -76,7 +80,7 @@ class App extends Component {
     return (
       <div className="App">
         <div id='top-bar' className="red-fill">
-          <div id='logo'><img src={logo} /><h2>ProRep</h2><span> Vote <i>YES</i> on the referendum!</span></div>
+          <div id='logo' aria-label="prorep logo"><img src={logo} /><h2>ProRep</h2><span> Vote <i>YES</i> on the referendum!</span></div>
           <ul>
             <li>Please also check out:</li>
             <li className="link"><a href="https://elections.bc.ca/referendum">Elections BC</a></li>
@@ -85,22 +89,36 @@ class App extends Component {
           </ul>
         </div>
         <div id="left-pane">
-          <div id="system-toggle">
-            <button name="FPTP" className={"left-toggle " + (this.state.system === VotingSystem.FPTP ? "selected" : "")} onClick={this.toggleSystem}>
-              FPTP
-            </button>
-            <button name="MMP" className={"right-toggle " + (this.state.system === VotingSystem.FPTP ? "" : "selected")} onClick={this.toggleSystem}>
-              MMP
-            </button>
-            { infoBox }
+          <div id='left-upper'>
+            <div className='info-box-persistent'>
+              <p>Hello!</p>
+              <p>
+                I hope you have landed on this site because you are looking to make an informed vote in ongoing BC referendum on proportional representation. 
+                This little app was designed to aid your understanding of the proposed changes with a hands-on example.
+              </p>
+              <p>
+                The {this.buildPopLink('toggle')} just below this box switches the seat allocation algorithm from First-Past-The-Post (FPTP) between Mixed-Member-Proportional (MMP), changing the make-up of {this.buildPopLink('parliament')}.
+              </p>
+                <p>The {this.buildPopLink('slider dials')} on the right are adjustable, so that one can configure different election outcomes for individual districts, also affecting the distributinon of seats in legislature.</p>
+                <p>Have fun!</p>
+            </div>
+            <div id="system-toggle" className={poptoggle ? 'pop-out' : ''}>
+              <button name="FPTP" className={"left-toggle " + (this.state.system === VotingSystem.FPTP ? "selected" : "")} onClick={this.toggleSystem}>
+                FPTP
+              </button>
+              <button name="MMP" className={"right-toggle " + (this.state.system === VotingSystem.FPTP ? "" : "selected")} onClick={this.toggleSystem}>
+                MMP
+              </button>
+              { infoBox }
+            </div>
           </div>
-          <Parliament election={this.state} />
+          <Parliament className={popparliament ? 'pop-out' : ''} election={this.state} />
         </div>
         <div id="regions">
-          <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onRegionChange}/>
-          <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange} showInfo={true}/>
-          <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onRegionChange}/>
-          <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onRegionChange}/>
+          <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onRegionChange} popSliders={popslider}/>
+          <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange} popSliders={popslider} showInfo={true}/>
+          <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onRegionChange} popSliders={popslider}/>
+          <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onRegionChange} popSliders={popslider}/>
         </div>
         <div id='bottom-bar' className="red-fill">
           <span>Made by <a href="https://github.com/boxofsquares">Jako {"\u25F3"}</a></span>
@@ -130,6 +148,21 @@ class App extends Component {
   toggleInfo() {
     this.setState({toggleInfo : !this.state.toggleInfo})
   }
+
+  hoverInfo(event) {
+    const { target } = event;
+    console.log(target.id.split(' ')[0]);
+    let _newState = {
+      ["pop" + target.id.split(' ')[0]]: !this.state["pop" + target.id.split(' ')[0]],
+    };
+    this.setState(_newState);
+  }
+
+  buildPopLink(text) {
+    return  ( 
+      <b id={text} className="pop-link red-text" onMouseOver={this.hoverInfo} onMouseLeave={this.hoverInfo}>{text}</b>
+    );
+  }
 }
 
 class Parliament extends Component {
@@ -141,9 +174,8 @@ class Parliament extends Component {
     let html = this.buildSeats(allSeats);
     let baseOp = 1/2;
     return(
-      <div id="parliament-wrapper">
+      <div className={this.props.className} id="parliament-wrapper">
         <h1>Parliament</h1>
-        
         <div
           key={system}
           id="parliament">
@@ -283,7 +315,7 @@ class Region extends Component {
   }
 
   render() {
-    let { showInfo, details } = this.props;
+    let { popSliders, details, showInfo } = this.props;
     let { toggleInfo } = this.state;
     let infoBox; 
 
@@ -301,10 +333,10 @@ class Region extends Component {
           { infoBox }
         </div>
         <div className="districts">
-        <District details={details.districts[0]} name={details.regionAttr.districts[0]} notifyParent={this.onDistrictChange}/>
-        <District details={details.districts[1]} name={details.regionAttr.districts[1]} notifyParent={this.onDistrictChange} showInfo={showInfo}/>
-        <District details={details.districts[2]} name={details.regionAttr.districts[2]} notifyParent={this.onDistrictChange}/>
-        <District details={details.districts[3]} name={details.regionAttr.districts[3]} notifyParent={this.onDistrictChange}/>
+        <District details={details.districts[0]} name={details.regionAttr.districts[0]} notifyParent={this.onDistrictChange} popSliders={popSliders}/>
+        <District details={details.districts[1]} name={details.regionAttr.districts[1]} notifyParent={this.onDistrictChange} popSliders={popSliders} showInfo={showInfo}/>
+        <District details={details.districts[2]} name={details.regionAttr.districts[2]} notifyParent={this.onDistrictChange} popSliders={popSliders}/>
+        <District details={details.districts[3]} name={details.regionAttr.districts[3]} notifyParent={this.onDistrictChange} popSliders={popSliders}/>
 
         </div>
         {this.displayVoteBar()}
@@ -365,7 +397,7 @@ class District extends Component {
   
   render() {
     const { results } = this.props.details;
-    const { showInfo } = this.props;
+    const { popSliders, showInfo } = this.props;
     const { toggleInfo } = this.state;
     const winner = this.getWinner()["party"];
 
@@ -382,7 +414,7 @@ class District extends Component {
           <h2>{this.props.name}</h2>
           { infoBox }
         </div>
-        <VoteSlider low={results.blue.votes} high={results.blue.votes + results.red.votes} handleChange={this.handleSliderChange}/>
+        <VoteSlider low={results.blue.votes} high={results.blue.votes + results.red.votes} handleChange={this.handleSliderChange} popSliders={popSliders}/>
       </div>
     );
   }
