@@ -6,16 +6,16 @@ import "./colors.scss";
 class VoteSlider extends Component {
   constructor(props) {
     super(props);
-    this.handleMouseUp = this.handleMouseUp.bind(this);
-    this.handleMouseDownLeft = this.handleMouseDownLeft.bind(this);
-    this.handleMouseDownRight = this.handleMouseDownRight.bind(this);
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleTouchStartLeft = this.handleTouchStartLeft.bind(this);
+    this.handleMouseUp         = this.handleMouseUp.bind(this);
+    this.handleMouseDownLeft   = this.handleMouseDownLeft.bind(this);
+    this.handleMouseDownRight  = this.handleMouseDownRight.bind(this);
+    this.handleMouseMove       = this.handleMouseMove.bind(this);
+    this.handleTouchStartLeft  = this.handleTouchStartLeft.bind(this);
     this.handleTouchStartRight = this.handleTouchStartRight.bind(this);
-    this.handleTouchMove = this.handleTouchMove.bind(this);
-    this.handleTouchEnd = this.handleTouchEnd.bind(this);
-    this.increment = 1;
-    this.state = {
+    this.handleTouchMove       = this.handleTouchMove.bind(this);
+    this.handleTouchEnd        = this.handleTouchEnd.bind(this);
+    this.increment             = 1;
+    this.state                 = {
       xPos: null,
       mouseDown: false,
       touchDown: false,

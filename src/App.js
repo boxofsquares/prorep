@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {CSSTransition } from 'react-transition-group';
+import { CSSTransition } from 'react-transition-group';
 
 import './App.scss';
 import './colors.scss';
@@ -12,8 +12,14 @@ const NO_OF_DISTRICTS = 4;
 const NO_OF_REGION_SEATS = 2;
 const VotingSystem = Object.freeze({ 
   FPTP: 0,
-  MMP: 1,
+  MMP : 1,
 });
+const Preset = Object.freeze({
+  None         : 0,
+  TwoPartySplit: 1,
+  Landslide    : 2,
+  CloseRunnerUp: 3,
+})
 
 class App extends Component {
   constructor(props) {
@@ -22,55 +28,31 @@ class App extends Component {
     this.initializeState()
 
     // Binding Handlers
-    this.onRegionChange = this.onRegionChange.bind(this);
-    this.toggleSystem = this.toggleSystem.bind(this);
-    this.toggleInfo = this.toggleInfo.bind(this);
-    this.hoverInfo = this.hoverInfo.bind(this);
+    this.onRegionChange     = this.onRegionChange.bind(this);
+    this.toggleSystem       = this.toggleSystem.bind(this);
+    this.toggleInfo         = this.toggleInfo.bind(this);
+    this.hoverInfo          = this.hoverInfo.bind(this);
+    this.randomizeVotes     = this.randomizeVotes.bind(this);
+    this.handlePresetChange = this.handlePresetChange.bind(this);
   }
 
   initializeState() {
-    // 1 province, 4 regions, 4 districts   
-    this.state ={ regions: [] };
-    for(let j = 1; j <= NO_OF_REGIONS; j++) {  
-      let _region = { 
-        regionId: j,
-        regionAttr: Names.regions[j-1],
-        districts: [] };  
-      let _lower = (j-1) * NO_OF_DISTRICTS + 1;
-      let _upper = _lower + NO_OF_DISTRICTS;
-      for(let i = _lower; i < _upper; i++) {
-        _region.districts.push({
-          districtId: i,
-          results: {
-          blue: { 
-            votes: 20,
-          },
-          red: {
-            votes: 50,
-          },
-          green: {
-            votes: 30,
-          },
-          }
-        });
-      }
-      // TODO: This is hardcoded for now !!!
-      _region["overall"] = {
-        blue: 80,
-        red: 200,
-        green: 120,
-        total: 400,
-      }
-      this.state.regions.push(_region);
-    }
-    this.state.system = VotingSystem.FPTP;
-    this.state.poptoggle = false;
+    // 1 province, 4 regions, 4 districts  
+    this.state = { regions: [] };   
+    this.state.system        = VotingSystem.FPTP;
+    this.state.poptoggle     = false;
     this.state.popparliament = false;
-    this.state.popslider = false;
+    this.state.popslider     = false;
+    this.state.preset        = 0;
+    this.state.loading       = true;
+  }
+
+  componentDidMount() {
+    this.randomizeVotes();
   }
 
   render() {
-    let { toggleInfo, poptoggle, popslider, popparliament } = this.state;
+    let { toggleInfo, poptoggle, popslider, popparliament, preset, loading } = this.state;
     
     let infoBox; 
     infoBox = toggleInfo ? 
@@ -112,14 +94,29 @@ class App extends Component {
               { infoBox }
             </div>
           </div>
-          <Parliament className={popparliament ? 'pop-out' : ''} election={this.state} />
+          { loading ? <div>loading</div> :
+            <Parliament className={popparliament ? 'pop-out' : ''} election={this.state} />
+          }
         </div>
+        { loading ? <div> loading</div> :
         <div id="regions">
+          <div id='preset-select'>
+            <ul>
+              <li><h2>Presets:</h2></li>
+              <li className={ 'btn ' + (preset === Preset.None ? 'red-fill' : '')} onClick={() => this.handlePresetChange(Preset.None)}>{'None'.toUpperCase()}</li>
+              <li className={ 'btn ' + (preset === Preset.TwoPartySplit ? 'red-fill' : '')} onClick={() => this.handlePresetChange(Preset.TwoPartySplit)}>{'2 Party Split'.toUpperCase()}</li>
+              <li className={ 'btn ' + (preset === Preset.Landslide ? 'red-fill' : '')} onClick={() => this.handlePresetChange(Preset.Landslide)}>{'Blue Landslide'.toUpperCase()}</li>
+              <li className={ 'btn ' + (preset === Preset.CloseRunnerUp ? 'red-fill' : '')} onClick={() => this.handlePresetChange(Preset.CloseRunnerUp)}>{'Close Runner-Up'.toUpperCase()}</li>
+            </ul>
+            <div id='preset-info'>{ Info.presets[preset] }</div>
+          </div>
+          <div id='randomize' className='btn red-fill' onClick={this.randomizeVotes}>SHUFFLE VOTES</div>
           <Region details={this.getDistrictsForRegion(1)} notifyParent={this.onRegionChange} popSliders={popslider}/>
           <Region details={this.getDistrictsForRegion(2)} notifyParent={this.onRegionChange} popSliders={popslider} showInfo={true}/>
           <Region details={this.getDistrictsForRegion(3)} notifyParent={this.onRegionChange} popSliders={popslider}/>
           <Region details={this.getDistrictsForRegion(4)} notifyParent={this.onRegionChange} popSliders={popslider}/>
         </div>
+        }
         <div id='bottom-bar' className="red-fill">
           <span>Made by <a href="https://github.com/boxofsquares">Jako {"\u25F3"}</a></span>
           <span className="credit">all icons used by Kiran from the Noun Project</span>
@@ -134,7 +131,7 @@ class App extends Component {
   
   onRegionChange(regionState) {
     let _state = this.state;
-    _state.regions[regionState.regionId - 1] = regionState;
+    _state.regions[regionState.id - 1] = regionState;
     this.setState(_state);
   }
 
@@ -163,16 +160,128 @@ class App extends Component {
       <b id={text} className="pop-link red-text" onMouseOver={this.hoverInfo} onMouseLeave={this.hoverInfo}>{text}</b>
     );
   }
+
+  randomizeVotes() {
+    const { preset } = this.state;
+    this.setState({ loading: true });
+    let _regions = [];
+    for(let j = 1; j <= NO_OF_REGIONS; j++) {  
+      let _region = { 
+        id  : j,
+        regionAttr: Names.regions[j-1],
+        districts : [],
+        overall   : {
+          blue : 0,
+          red  : 0,
+          green: 0,
+          total: 0
+        }
+      };
+      let _lower = (_region.id - 1) * NO_OF_DISTRICTS + 1;
+      let _upper = _lower + NO_OF_DISTRICTS;
+
+      for(let i = _lower; i < _upper; i++) {
+        let point, range, _blue, _red, _green;
+
+        switch(preset) {
+          case Preset.None:
+            point  = Math.floor(Math.random() * 101);
+            range  = Math.floor(Math.min(point, 100 - point) * Math.random());
+            _blue  = point - range;
+            _red   = range * 2;
+            _green = 100 - point - range;
+            break;
+          case Preset.TwoPartySplit:
+            point  = Math.floor(Math.random() * 41) + 60;
+            range  = Math.floor(Math.random() * 11);
+            _blue  = Math.floor(point / 2) - 5 + range;
+            _red   = point - _blue;
+            _green = 100 - point; 
+            break;
+          case Preset.Landslide:
+            point = Math.floor(Math.random() * 21) + 40;
+            range = Math.floor(Math.random() * (100 - point));
+            _blue = point;
+            _red = range;
+            _green = 100 - point - range;
+            break;
+          case Preset.CloseRunnerUp:
+            point  = Math.floor(Math.random() * 41) + 60;
+            range  = Math.floor(Math.random() * 11);
+            _red   = Math.floor(point / 2) - 1 + range;
+            _blue  = point - _red;
+            _green = 100 - point;
+            break;
+          default:
+        }
+
+
+        // Normalize so that there is no even splits
+        let arr = [_blue, _red, _green];
+        
+        for(let i = 0; i < 3; i++) {
+          let collision = arr.slice(i + 1).reduce((acc,count,index) => {
+            if (arr[i] === count ) {
+              acc = index;
+            } else if (arr[i] < count) {
+              acc = 0;
+            }
+            return acc;
+          }, 0);
+          
+          if (collision > 0) {
+            arr[i]++;
+            arr[i + + 1 + collision]--;
+          }
+          break;
+        }
+
+        [_blue, _red, _green] = arr;
+
+        _region.districts.push({
+          districtId: i,
+          results   : {
+            blue: { 
+              votes: _blue,
+            },
+            red: {
+              votes: _red,
+            },
+            green: {
+              votes: _green,
+            },
+          }
+        });
+
+        _region.overall.blue  += _blue;
+        _region.overall.red   += _red;
+        _region.overall.green += _green;
+        _region.overall.total += _blue + _red + _green;
+      }
+
+    _regions.push(_region);
+    }
+    this.setState({ regions: _regions, loading: false });
+  }
+
+  handlePresetChange(newPreset) {
+    // preset needs to have reset before we can run randomizeVotes()
+    // this is to avoid running randomizeVotes in each render because it will cause 
+    // rerendering because of the intentional randomization
+    const { preset } = this.state;
+    if (newPreset === preset) return;
+    this.setState({ preset: newPreset }, () => {this.randomizeVotes()});
+  }
 }
 
 class Parliament extends Component {
 
   render() {
-    let { system } = this.props.election;
-    let { allSeats, overall } = this.getAllSeats();
+    let   { system }                 = this.props.election;
+    let   { allSeats, overall }      = this.getAllSeats();
     const { blue, red, green, total} = this.getPopularVote();
-    let html = this.buildSeats(allSeats);
-    let baseOp = 1/2;
+    let   html                       = this.buildSeats(allSeats);
+    let   baseOp                     = 1/2;
     return(
       <div className={this.props.className} id="parliament-wrapper">
         <h1>Parliament</h1>
@@ -209,9 +318,9 @@ class Parliament extends Component {
         allSeats.push(
           {
             districtId: district.districtId,
-            type: "direct",
-            party: winner,
-            uuid: district.districtId,
+            type      : "direct",
+            party     : winner,
+            uuid      : district.districtId,
           }
         );
         seatsByParty[winner] += 1;
@@ -219,9 +328,9 @@ class Parliament extends Component {
       }
       // acc.allSeats.push(...directSeats);
       if (this.props.election.system === VotingSystem.MMP) {
-        let results = this.distributeRegionalSeats(allSeats,seatsByParty, region);
-        allSeats = results.allSeats;
-        seatsByParty = results.seatsByParty;
+        let results      = this.distributeRegionalSeats(allSeats,seatsByParty, region);
+            allSeats     = results.allSeats;
+            seatsByParty = results.seatsByParty;
       }
       acc.allSeats.push(...allSeats);
       ["blue","red","green","total"].forEach((party) => {
@@ -261,12 +370,8 @@ class Parliament extends Component {
   }
 
   distributeRegionalSeats(directSeats, seatsByParty, regionObj) {
-    let { overall, regionId } = regionObj;
-    // let allSeats = directSeats.reduce((acc, districtSeat) => {
-    //   acc[districtSeat.party] += 1;
-    //   return acc;
-    // }, { blue: 0, red: 0, green: 0 })
-    let regionSeats = []
+    let { overall, id } = regionObj;
+    let regionSeats           = []
     for(let i = 0; i < NO_OF_REGION_SEATS; i++) {
       let delta = ["blue","red","green"].reduce((acc, party) => {
         let margin = seatsByParty[party] /  (directSeats.length + NO_OF_REGION_SEATS) - overall[party] / overall.total ;
@@ -281,9 +386,9 @@ class Parliament extends Component {
       seatsByParty.total += 1;
       regionSeats.push({
           districtId: 0,
-          type: "region",
-          party: delta.party,
-          uuid: regionId * 100 + i,
+          type      : "region",
+          party     : delta.party,
+          uuid      : id * 100 + i,
       })
     }
     return { allSeats: [...directSeats, ...regionSeats], seatsByParty: seatsByParty };
@@ -308,15 +413,13 @@ class Region extends Component {
   constructor(props) {
     super(props);
     this.onDistrictChange = this.onDistrictChange.bind(this);
-    this.toggleInfo = this.toggleInfo.bind(this);
-    this.state = {
-      toggleInfo: false,
-    };
+    this.toggleInfo       = this.toggleInfo.bind(this);
+    this.state            = { toggleInfo: false };
   }
 
   render() {
     let { popSliders, details, showInfo } = this.props;
-    let { toggleInfo } = this.state;
+    let { toggleInfo }                    = this.state;
     let infoBox; 
 
     if (showInfo) {
@@ -346,7 +449,7 @@ class Region extends Component {
 
   displayVoteBar() {
     let overall = this.props.details.overall;
-    let _total = this.props.details.overall.total;
+    let _total  = this.props.details.overall.total;
     return (
       <div className="vote-bar">
         <div className="vote-bar-range blue-fill" style={{width: overall["blue"]/_total * 100 + "%"}}>
@@ -373,7 +476,7 @@ class Region extends Component {
   onDistrictChange(districtState) {
     let _regionState = this.props.details;
     _regionState[districtState.districtId] = districtState;
-    _regionState["overall"] = this.calculateOveralls(_regionState);
+    _regionState["overall"]                = this.calculateOveralls(_regionState);
     this.props.notifyParent(
       _regionState
     );
@@ -392,14 +495,14 @@ class District extends Component {
     }
     // this.handleChange = this.handleChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
-    this.toggleInfo = this.toggleInfo.bind(this);
+    this.toggleInfo         = this.toggleInfo.bind(this);
   }
   
   render() {
-    const { results } = this.props.details;
+    const { results }              = this.props.details;
     const { popSliders, showInfo } = this.props;
-    const { toggleInfo } = this.state;
-    const winner = this.getWinner()["party"];
+    const { toggleInfo }           = this.state;
+    const winner                   = this.getWinner()["party"];
 
     let infoBox; 
     if (showInfo) {
@@ -421,10 +524,11 @@ class District extends Component {
 
     // Handlers
     handleSliderChange({ low, high }) {
-      const { notifyParent } = this.props;
-      let { districtId, results } = this.props.details;
-      results.blue.votes = low;
-      results.red.votes = high - low;
+      const { notifyParent }        = this.props;
+      let   { districtId, results } = this.props.details;
+      
+      results.blue.votes  = low;
+      results.red.votes   = high - low;
       results.green.votes = 100 - high;
 
       notifyParent({ districtId, results });

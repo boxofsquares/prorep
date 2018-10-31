@@ -345,6 +345,7 @@ html {
     grid-area: regions;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: min-content auto;
     grid-auto-flow: row;
     justify-items: stretch;
     align-items: stretch;
@@ -355,6 +356,39 @@ html {
       grid-template-columns: repeat(1, 1fr);
       box-shadow: none;
       padding: 0;
+    }
+
+    .btn {
+      line-height: 1.2rem;
+      font-size: 1.4rem;
+      padding: 1rem;
+      border-radius: 0.2rem;
+      cursor: pointer;
+    }
+
+    #randomize {
+      justify-self: end;
+      align-self: start;
+      margin: 1rem;
+    }
+
+    #preset-select {
+      justify-self: start;
+      margin: 1rem;
+      text-align: left;
+      
+      ul {
+        list-style: none;
+        display: inline-block;
+        li {
+          display: inline-block;
+          margin-right: 1rem;
+        }
+      }
+
+      #preset-info {
+        display: block;
+      }
     }
 
     .region {
