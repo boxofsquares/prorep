@@ -14,7 +14,6 @@ class VoteSlider extends Component {
     this.handleTouchStartRight = this.handleTouchStartRight.bind(this);
     this.handleTouchMove       = this.handleTouchMove.bind(this);
     this.handleTouchEnd        = this.handleTouchEnd.bind(this);
-    this.increment             = 1;
     this.state                 = {
       xPos: null,
       mouseDown: false,
@@ -38,14 +37,14 @@ class VoteSlider extends Component {
         onTouchMove={this.handleTouchMove}
         onTouchEnd={this.handleTouchEnd}
         >
-        <div className="slider-rail">
-        <div className="slider-bar-wrapper">
-          <div className="slider-left blue-fill" style={leftBar} onMouseDown={this.stopBubble}>
-          </div>
-          <div className="slider-middle red-fill" style={middleBar} onMouseDown={this.stopBubble}>
-          </div>
-          <div className="slider-right green-fill" style={rightBar} onMouseDown={this.stopBubble}>
-          </div>
+          <div ref='sliderRail' className="slider-rail">
+            <div className="slider-bar-wrapper">
+              <div className="slider-left blue-fill" style={leftBar} onMouseDown={this.stopBubble}>
+              </div>
+              <div className="slider-middle red-fill" style={middleBar} onMouseDown={this.stopBubble}>
+              </div>
+              <div className="slider-right green-fill" style={rightBar} onMouseDown={this.stopBubble}>
+            </div>
           </div>
           <TransitionGroup>
               <CSSTransition
@@ -186,55 +185,62 @@ class VoteSlider extends Component {
     for(let touch of changedTouches) {
       const { identifier, screenX } = touch;
       if (identifier === touchIdentifier) {
-        console.log('in');
         this.verifyMove(screenX);
       }
     }
   }
 
-  handleMouseMove({ screenX }) {
+  handleMouseMove({ screenX, relatedTarget }) {
     const { mouseDown, touchDown } = this.state;
     if (touchDown) return;
     if (!mouseDown) return;
+
     this.verifyMove(screenX); 
   }
 
-  verifyMove(screenX) {
+  verifyMove(screenX, width) {
     const { xPos, dial } = this.state;
-    const { low, high } = this.props;
-    let _low = low;
-    let _high = high;
-    if (screenX < xPos) {
+    const { low, high }  = this.props;
+    let   _low           = low,
+          _high          = high,
+          _diff          = screenX - xPos,
+          _railWidth     = this.refs.sliderRail.offsetWidth,
+          _minIncrement  = 1,
+          _delta         = Math.abs(Math.floor(_diff / _railWidth * 100));
+
+    if (_delta < 1) return;
+
+    if (_diff < 0) {
       if (dial === "left") {
-        _low -= this.increment;
-        if (_low < 0) return
+        _low -= _delta;
+        if (_low < 0) _low = 0;
         let validValue = this.checkBounds(_low, _high);
-        if (!validValue) _low -= this.increment;
+        if (!validValue) _low -= _minIncrement;
       } else {
-        _high -= this.increment;
-        if (_high < _low) return;
+        _high -= _delta;
+        if (_high < _low) _high = _low;
         let validValue = this.checkBounds(_low, _high);
         if (!validValue) {
-          if (_high - this.increment > _low) {
-            _high -= this.increment;
-          } else { return ;}
+          if (_high - _minIncrement > _low) {
+            _high -= _minIncrement;
+          } else { return }
         }
       }
-    } else if (screenX > xPos) {
+    } else if (_diff > 0) {
       if (dial === "left") {
-        _low += this.increment;
-        if (_low > _high) return;
+        _low += _delta;
+        if (_low > _high) _low = _high;
         let validValue = this.checkBounds(_low, _high);
         if (!validValue) {
-          if (_low + this.increment < _high) {
-            _low += this.increment;
+          if (_low + _minIncrement < _high) {
+            _low += _minIncrement;
           } else { return ;}
         }
       } else {
-        _high += this.increment;
-        if (_high > 100) return
+        _high += _delta;
+        if (_high > 100) _high = 100;
         let validValue = this.checkBounds(_low, _high);
-        if (!validValue) _high += this.increment;
+        if (!validValue) _high += _minIncrement;
       }
     }
     this.update({
@@ -258,7 +264,7 @@ class VoteSlider extends Component {
       mouseDown: false,
       touchDown: false,
       touchIdentifier: null,
-      dial: null,
+      // dial: null,  // persist dial selection to be able to move 'last touched' dial
     });
   }
 
@@ -268,8 +274,14 @@ class VoteSlider extends Component {
       leftBar: {width: `${low}%` }, 
       middleBar: {width: `${high - low}%`},
       rightBar: {width: `${100-high}%`},
-      lowDial: this.state.animationStart ? {left: `${low}%`} : {},
-      highDial: this.state.animationStart ? {left: `${high}%`} : {},
+      lowDial: {
+        ...(this.state.animationStart ? {left: `${low}%`} : {}),
+        ...( this.state.dial === 'left' ? {zIndex: 1} : {})
+      },
+      highDial: {
+        ...(this.state.animationStart ? {left: `${high}%`} : {}),
+        ...(this.state.dial === 'right' ? {zIndex: 1 } : {})
+      },
     }
   }
 
