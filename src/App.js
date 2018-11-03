@@ -220,7 +220,7 @@ class App extends Component {
         let arr = [_blue, _red, _green];
         
         for(let i = 0; i < 3; i++) {
-          let collision = arr.slice(i + 1).reduce((acc,count,index) => {
+          let collision = arr.slice(i).reduce((acc,count,index) => {
             if (arr[i] === count ) {
               acc = index;
             } else if (arr[i] < count) {
@@ -231,7 +231,7 @@ class App extends Component {
           
           if (collision > 0) {
             arr[i]++;
-            arr[i + + 1 + collision]--;
+            arr[i + collision]--;
           }
           break;
         }
@@ -288,8 +288,9 @@ class Parliament extends Component {
         <div
           key={system}
           id="parliament">
-          { html }
+          { this.buildSVG(allSeats) }
         </div>
+        {/* { this.buildSVG(allSeats) } */}
         <div id="legend">
           <span className="district"><span className="red-fill"></span>District Seat</span>
           <span className="region"><span className="red-fill">R</span>Region Seat</span>
@@ -343,7 +344,7 @@ class Parliament extends Component {
 
   buildSeats(allSeats) {
     return (
-        allSeats.map((seat, index) => {
+        allSeats.map((seat) => {
           return (
             <CSSTransition
             timeout={600}
@@ -358,6 +359,61 @@ class Parliament extends Component {
         })
     )
    }
+
+   buildSVG(allSeats) {
+    var seatWidth       = 20;
+    var seatsPerRow     = 8;
+    var baseRadius      = 2* seatsPerRow * seatWidth / Math.PI;
+    var rows            = Math.floor(allSeats.length / seatsPerRow);
+    var containerHeight = (rows + 1) * seatWidth * 2 + baseRadius;
+    var containerWidth  = ((rows + 1) * seatWidth * 2 + baseRadius) * 2;
+    var seats           = {
+      blue : [],
+      red  : [],
+      green: []
+    };
+
+    for (let seat of allSeats) {
+      seats[seat.party].push(seat);
+    }
+
+    let _allSeats = [ ...seats.blue, ...seats.red, ...seats.green ];
+    let svgSeats = [];
+
+    for (let i = 0; i < seatsPerRow * rows; i++) {
+      let seat = _allSeats[i];
+      let row = i % rows;
+      let { x, y } = this.radialToCartesian(
+        containerWidth / 2,
+        containerHeight - 2* seatWidth,
+        baseRadius + (seatWidth * 1.66 * row),
+        (Math.floor(i / rows) + ((row % 2) - 1/2) / 2) * Math.PI  / (seatsPerRow - 1)
+      );
+      svgSeats.push(
+        <CSSTransition
+            timeout={600}
+            key={seat.uuid}
+            classNames="seat"
+            in={true}
+            appear={true}
+            >
+          <circle className={'seat ' + seat.party +"-fill-svg " + seat.type} cx={x} cy={y} r={seatWidth} />
+        </CSSTransition>
+      )
+    }
+
+    return (
+      <svg id='svg-object' xmlns="http://www.w3.org/2000/svg" width={`${containerWidth}`} height={`${containerHeight}`} >
+        { svgSeats }
+      </svg>
+    )
+  }
+
+  radialToCartesian(x,y,radius,radians) {
+    let _x = x + Math.cos(radians) * radius;
+    let _y = y - Math.sin(radians) * radius;
+    return { x: _x, y: _y };
+  }
 
   getWinner(districtObj) {
     return Object.keys(districtObj.results).reduce((acc, _party) => {

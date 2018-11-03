@@ -6,16 +6,28 @@ body {
   .blue-fill {
     background-color: $blue;
     color: white;
+
+    &-svg {
+      fill: $blue;
+    }
   }
 
   .red-fill {
     background-color: $red;
     color: white;
+
+    &-svg {
+      fill: $red;
+    }
   }
   
   .green-fill {
     background-color: $green;
     color: white;
+    
+    &-svg {
+      fill: $green;
+    } 
   }
 
   .blue-text {

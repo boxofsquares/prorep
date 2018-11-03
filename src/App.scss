@@ -14,7 +14,7 @@ html {
   text-align: center;
   display: grid;
   grid-template:
-    "top-bar top-bar" max-content "left-pane regions"auto "bottom-bar bottom-bar" max-content /  33.33% auto;
+    "top-bar top-bar" max-content "left-pane regions"auto "bottom-bar bottom-bar" max-content /  minmax(500px, 33.3%) auto;
   height: 100vh;
 
   @media screen and (max-width: $small-size) {
@@ -253,10 +253,11 @@ html {
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: background-color 1s ease-in-out;
+          transition: fill 1s ease-in-out;
           color: white;
           font-weight: bold;
           font-size: 2rem;
+          transform-origin: 50% 50%;
         }
 
         .seat-appear,

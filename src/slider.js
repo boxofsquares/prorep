@@ -15,12 +15,12 @@ class VoteSlider extends Component {
     this.handleTouchMove       = this.handleTouchMove.bind(this);
     this.handleTouchEnd        = this.handleTouchEnd.bind(this);
     this.state                 = {
-      xPos: null,
-      mouseDown: false,
-      touchDown: false,
+      xPos           : null,
+      mouseDown      : false,
+      touchDown      : false,
       touchIdentifier: null,
-      dial: null,
-      animationStart: false,
+      dial           : null,
+      animationStart : false,
     };
   }
 
@@ -30,12 +30,12 @@ class VoteSlider extends Component {
     const { leftLabel, centerLabel, rightLabel } = this.getSliderLabels();
     return (
       <div 
-        className="slider-container"
-        onMouseUp={this.handleMouseUp} 
-        onMouseLeave={this.handleMouseUp}
-        onMouseMove={this.handleMouseMove}
-        onTouchMove={this.handleTouchMove}
-        onTouchEnd={this.handleTouchEnd}
+        className    = "slider-container"
+        onMouseUp    = {this.handleMouseUp}
+        onMouseLeave = {this.handleMouseUp}
+        onMouseMove  = {this.handleMouseMove}
+        onTouchMove  = {this.handleTouchMove}
+        onTouchEnd   = {this.handleTouchEnd}
         >
           <div ref='sliderRail' className="slider-rail">
             <div className="slider-bar-wrapper">
@@ -48,39 +48,39 @@ class VoteSlider extends Component {
           </div>
           <TransitionGroup>
               <CSSTransition
-                timeout={1000}
-                in={true}
-                classNames="dial"
-                appear={true}
-                onEntering={() => {
+                timeout    = {1000}
+                in         = {true}
+                classNames = "dial"
+                appear     = {true}
+                onEntering = {() => {
                   this.setState({animationStart: true});
                 }}
               >
                 <div 
-                  id={"left-dial"}
-                  key={1}
-                  className={"slider-dial " + (popSliders ? "pop-out" : "") } 
-                  style={lowDial} 
-                  onMouseDown={this.handleMouseDownLeft}
-                  onTouchStart={this.handleTouchStartLeft}
+                  id           = {"left-dial"}
+                  key          = {1}
+                  className    = {"slider-dial " + (popSliders ? "pop-out" : "") }
+                  style        = {lowDial}
+                  onMouseDown  = {this.handleMouseDownLeft}
+                  onTouchStart = {this.handleTouchStartLeft}
                   >
                 </div>
               </CSSTransition>
               <CSSTransition
-                timeout={1000}
-                in={true}
-                classNames="dial"
-                appear={true}
-                onEntering={() => {
+                timeout    = {1000}
+                in         = {true}
+                classNames = "dial"
+                appear     = {true}
+                onEntering = {() => {
                   this.setState({animationStart: true});
                 }}>
                   <div 
-                    id={"right-dial"}
-                    key={2}
-                    className={'slider-dial ' + (popSliders ? 'pop-out' : '')}  
-                    style={highDial} 
-                    onMouseDown={this.handleMouseDownRight} 
-                    onTouchStart={this.handleTouchStartRight}
+                    id           = {"right-dial"}
+                    key          = {2}
+                    className    = {'slider-dial ' + (popSliders ? 'pop-out' : '')}
+                    style        = {highDial}
+                    onMouseDown  = {this.handleMouseDownRight}
+                    onTouchStart = {this.handleTouchStartRight}
                     >
                   </div>
               </CSSTransition>
@@ -104,29 +104,29 @@ class VoteSlider extends Component {
 
       if (touchDown) return;
      this.setState({
-      xPos: screenX,
-      mouseDown: true, 
-      dial: "left",
+      xPos     : screenX,
+      mouseDown: true,
+      dial     : "left",
      });
   }
 
   handleMouseDownRight(event) {
     const { touchDown } = this.state;
-    let { screenX } = event;
+    let   { screenX }   = event;
     event.preventDefault();
     event.stopPropagation();
 
     if (touchDown) return;
     this.setState({
-     xPos: screenX,
-     mouseDown: true, 
-     dial: "right",
+     xPos     : screenX,
+     mouseDown: true,
+     dial     : "right",
     });
  }
 
   handleTouchStartLeft(event) {
     event.stopPropagation();
-    const { touches } = event;
+    const { touches }   = event;
     const { mouseDown } = this.state;
     if (mouseDown) return;
     if (touches.length > 1) return;
@@ -134,16 +134,16 @@ class VoteSlider extends Component {
     const {screenX, identifier } = touches[0];
 
     this.setState({
-      touchDown: true,
+      touchDown      : true,
       touchIdentifier: identifier,
-      x: screenX,
-      dial: "left",
+      x              : screenX,
+      dial           : "left",
     });
   }
 
   handleTouchStartRight(event) {
     event.stopPropagation();
-    const { touches } = event;
+    const { touches }   = event;
     const { mouseDown } = this.state;
     if (mouseDown) return;
     if (touches.length > 1) return;
@@ -151,10 +151,10 @@ class VoteSlider extends Component {
     const {screenX, identifier } = touches[0];
 
     this.setState({
-      touchDown: true,
+      touchDown      : true,
       touchIdentifier: identifier,
-      x: screenX,
-      dial: "right",
+      x              : screenX,
+      dial           : "right",
     });
   }
 
@@ -176,7 +176,7 @@ class VoteSlider extends Component {
   }
   
   handleTouchMove(event) {
-    const { changedTouches }= event;
+    const { changedTouches }                        = event;
     const { mouseDown, touchDown, touchIdentifier } = this.state;
 
     event.stopPropagation();
@@ -260,9 +260,9 @@ class VoteSlider extends Component {
 
   resetDial() {
     this.setState({
-      xPos: null,
-      mouseDown: false,
-      touchDown: false,
+      xPos           : null,
+      mouseDown      : false,
+      touchDown      : false,
       touchIdentifier: null,
       // dial: null,  // persist dial selection to be able to move 'last touched' dial
     });
@@ -288,9 +288,9 @@ class VoteSlider extends Component {
   getSliderLabels() {
     const { low,  high } = this.props;
     return {
-      leftLabel: `${low}%`,
+      leftLabel  : `${low}%`,
       centerLabel: `${high - low}%`,
-      rightLabel: `${100 - high}%`,
+      rightLabel : `${100 - high}%`,
     }
   }
 
