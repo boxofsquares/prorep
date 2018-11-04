@@ -397,7 +397,10 @@ class Parliament extends Component {
             in={true}
             appear={true}
             >
+            <g>
           <circle className={'seat ' + seat.party +"-fill-svg " + seat.type} cx={x} cy={y} r={seatWidth} />
+          { seat.type === 'region' ? <text x={x} y={y} className={'svg-text'} text-anchor="middle" dominant-baseline="middle">R</text> : null }
+          </g>
         </CSSTransition>
       )
     }

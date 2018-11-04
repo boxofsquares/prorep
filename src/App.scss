@@ -260,6 +260,11 @@ html {
           transform-origin: 50% 50%;
         }
 
+        .svg-text {
+          fill: white;
+          font: bold 1rem "Segoe UI";
+        }
+
         .seat-appear,
         .seat-enter {
           transform: scale(0.1);
